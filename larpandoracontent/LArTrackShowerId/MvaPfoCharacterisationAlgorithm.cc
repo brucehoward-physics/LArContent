@@ -88,6 +88,9 @@ bool MvaPfoCharacterisationAlgorithm<T>::IsClearTrack(const pandora::ParticleFlo
             metadata.m_propertiesToAdd["TrackScore"] = -1.f;
             PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::ParticleFlowObject::AlterMetadata(*this, pPfo, metadata));
         }
+
+	std::cout << "BH PANDORA PRINTOUT:: PFO is **NOT** 3D. Returning IsClearTrack: " << (pPfo->GetParticleId() == MU_MINUS ? "true" : "false") << std::endl;
+
         return (pPfo->GetParticleId() == MU_MINUS);
     }
 
@@ -233,6 +236,8 @@ bool MvaPfoCharacterisationAlgorithm<T>::IsClearTrack(const pandora::ParticleFlo
         return isTrueTrack;
     }
 
+    std::cout << "BH PANDORA PRINTOUT:: featureVector size =  " << featureVector.size() << std::endl;
+
     for (const LArMvaHelper::MvaFeature &featureValue : featureVector)
     {
         if (!featureValue.IsInitialized())
@@ -243,6 +248,9 @@ bool MvaPfoCharacterisationAlgorithm<T>::IsClearTrack(const pandora::ParticleFlo
                 metadata.m_propertiesToAdd["TrackScore"] = -1.f;
                 PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::ParticleFlowObject::AlterMetadata(*this, pPfo, metadata));
             }
+
+	    std::cout << "BH PANDORA PRINTOUT:: Feature Value is not initialized! Returning IsClearTrack: " << (pPfo->GetParticleId() == MU_MINUS ? "true" : "false") << std::endl;
+
             return (pPfo->GetParticleId() == MU_MINUS);
         }
     }
@@ -258,6 +266,10 @@ bool MvaPfoCharacterisationAlgorithm<T>::IsClearTrack(const pandora::ParticleFlo
         object_creation::ParticleFlowObject::Metadata metadata;
         metadata.m_propertiesToAdd["TrackScore"] = score;
         PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::ParticleFlowObject::AlterMetadata(*this, pPfo, metadata));
+
+	std::cout << "BH PANDORA PRINTOUT:: Made it to characterization. Score=" << score << ", minProbCut=" << m_minProbabilityCut
+		  << ". Returning IsClearTrack: " << (pPfo->GetParticleId() == MU_MINUS ? "true" : "false") << std::endl;
+
         return (m_minProbabilityCut <= score);
     }
 }
