@@ -9,6 +9,7 @@
 #include "Pandora/AlgorithmHeaders.h"
 
 #include "larpandoracontent/LArHelpers/LArClusterHelper.h"
+#include "larpandoracontent/LArObjects/LArCaloHit.h"
 
 #include "larpandoracontent/LArTwoDReco/LArClusterCreation/TrackClusterCreationAlgorithm.h"
 
@@ -135,11 +136,23 @@ StatusCode TrackClusterCreationAlgorithm::AddFilteredCaloHits(
                 if (hitToClusterMap.end() != hitToClusterMap.find(pCaloHitI))
                     continue;
 
+                const LArCaloHit *const pLArCaloHitI{dynamic_cast<const LArCaloHit *const>(pCaloHitI)};
+                if (!pLArCaloHitI)
+                    continue;
+
                 const CaloHit *pClosestHit = NULL;
                 float closestSeparationSquared(m_minCaloHitSeparationSquared);
 
                 for (const CaloHit *const pCaloHitJ : clusteredHits)
                 {
+                    const LArCaloHit *const pLArCaloHitJ{dynamic_cast<const LArCaloHit *const>(pCaloHitJ)};
+                    if (!pLArCaloHitJ)
+                        continue;
+
+                    if (!(pLArCaloHitI->GetLArTPCVolumeId() == pLArCaloHitJ->GetLArTPCVolumeId() &&
+                        pLArCaloHitI->GetDaughterVolumeId() == pLArCaloHitJ->GetDaughterVolumeId()))
+                        continue;
+
                     if (pCaloHitI->GetMipEquivalentEnergy() > pCaloHitJ->GetMipEquivalentEnergy())
                         continue;
 
@@ -202,8 +215,20 @@ void TrackClusterCreationAlgorithm::MakePrimaryAssociations(const OrderedCaloHit
 
             for (const CaloHit *const pCaloHitI : caloHitsI)
             {
+                const LArCaloHit *const pLArCaloHitI{dynamic_cast<const LArCaloHit *const>(pCaloHitI)};
+                if (!pLArCaloHitI)
+                    continue;
                 for (const CaloHit *const pCaloHitJ : caloHitsJ)
-                    this->CreatePrimaryAssociation(pCaloHitI, pCaloHitJ, forwardHitAssociationMap, backwardHitAssociationMap);
+                {
+                    const LArCaloHit *const pLArCaloHitJ{dynamic_cast<const LArCaloHit *const>(pCaloHitJ)};
+                    if (!pLArCaloHitJ)
+                        continue;
+                    if (pLArCaloHitI->GetLArTPCVolumeId() == pLArCaloHitJ->GetLArTPCVolumeId() &&
+                        pLArCaloHitI->GetDaughterVolumeId() == pLArCaloHitJ->GetDaughterVolumeId())
+                    {
+                        this->CreatePrimaryAssociation(pCaloHitI, pCaloHitJ, forwardHitAssociationMap, backwardHitAssociationMap);
+                    }
+                }
             }
         }
     }
@@ -221,6 +246,9 @@ void TrackClusterCreationAlgorithm::MakeSecondaryAssociations(const OrderedCaloH
 
         for (const CaloHit *const pCaloHit : caloHits)
         {
+            const LArCaloHit *const pLArCaloHit{dynamic_cast<const LArCaloHit *const>(pCaloHit)};
+            if (!pLArCaloHit)
+                continue;
             HitAssociationMap::const_iterator fwdIter = forwardHitAssociationMap.find(pCaloHit);
             const CaloHit *const pForwardHit((forwardHitAssociationMap.end() == fwdIter) ? NULL : fwdIter->second.GetPrimaryTarget());
 
@@ -228,7 +256,16 @@ void TrackClusterCreationAlgorithm::MakeSecondaryAssociations(const OrderedCaloH
             const CaloHit *const pForwardHitCheck((backwardHitAssociationMap.end() == fwdCheckIter) ? NULL : fwdCheckIter->second.GetPrimaryTarget());
 
             if ((NULL != pForwardHit) && (pForwardHitCheck != pCaloHit))
-                this->CreateSecondaryAssociation(pCaloHit, pForwardHit, forwardHitAssociationMap, backwardHitAssociationMap);
+            {
+                const LArCaloHit *const pLArForwardHit{dynamic_cast<const LArCaloHit *const>(pForwardHit)};
+                if (!pLArForwardHit)
+                    continue;
+                if (pLArCaloHit->GetLArTPCVolumeId() == pLArForwardHit->GetLArTPCVolumeId() &&
+                    pLArCaloHit->GetDaughterVolumeId() == pLArForwardHit->GetDaughterVolumeId())
+                {
+                    this->CreateSecondaryAssociation(pCaloHit, pForwardHit, forwardHitAssociationMap, backwardHitAssociationMap);
+                }
+            }
 
             HitAssociationMap::const_iterator bwdIter = backwardHitAssociationMap.find(pCaloHit);
             const CaloHit *const pBackwardHit((backwardHitAssociationMap.end() == bwdIter) ? NULL : bwdIter->second.GetPrimaryTarget());
@@ -237,7 +274,16 @@ void TrackClusterCreationAlgorithm::MakeSecondaryAssociations(const OrderedCaloH
             const CaloHit *const pBackwardHitCheck((forwardHitAssociationMap.end() == bwdCheckIter) ? NULL : bwdCheckIter->second.GetPrimaryTarget());
 
             if ((NULL != pBackwardHit) && (pBackwardHitCheck != pCaloHit))
-                this->CreateSecondaryAssociation(pBackwardHit, pCaloHit, forwardHitAssociationMap, backwardHitAssociationMap);
+            {
+                const LArCaloHit *const pLArBackwardHit{dynamic_cast<const LArCaloHit *const>(pBackwardHit)};
+                if (!pLArBackwardHit)
+                    continue;
+                if (pLArCaloHit->GetLArTPCVolumeId() == pLArBackwardHit->GetLArTPCVolumeId() &&
+                    pLArCaloHit->GetDaughterVolumeId() == pLArBackwardHit->GetDaughterVolumeId())
+                {
+                    this->CreateSecondaryAssociation(pBackwardHit, pCaloHit, forwardHitAssociationMap, backwardHitAssociationMap);
+                }
+            }
         }
     }
 }
@@ -384,25 +430,57 @@ void TrackClusterCreationAlgorithm::CreateSecondaryAssociation(const CaloHit *co
 const CaloHit *TrackClusterCreationAlgorithm::GetJoinHit(
     const CaloHit *const pCaloHit, const HitAssociationMap &hitAssociationMapI, const HitAssociationMap &hitAssociationMapJ) const
 {
+    const LArCaloHit *const pLArCaloHit{dynamic_cast<const LArCaloHit *const>(pCaloHit)};
+    if (!pLArCaloHit)
+        return nullptr;
+
     HitAssociationMap::const_iterator iterI = hitAssociationMapI.find(pCaloHit);
 
     if (hitAssociationMapI.end() == iterI)
-        return NULL;
+        return nullptr;
 
     const CaloHit *const pPrimaryTarget = iterI->second.GetPrimaryTarget();
     const CaloHit *const pSecondaryTarget = iterI->second.GetSecondaryTarget();
 
-    if (NULL == pSecondaryTarget)
-        return pPrimaryTarget;
+    const LArCaloHit *const pLArPrimaryTarget{dynamic_cast<const LArCaloHit *const>(pPrimaryTarget)};
+    if (!pLArPrimaryTarget)
+        return nullptr;
+
+    if (!pSecondaryTarget)
+    {
+        if (pLArCaloHit->GetLArTPCVolumeId() == pLArPrimaryTarget->GetLArTPCVolumeId() &&
+            pLArCaloHit->GetDaughterVolumeId() == pLArPrimaryTarget->GetDaughterVolumeId())
+        {
+            return pPrimaryTarget;
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
 
     unsigned int primaryNSteps(0), secondaryNSteps(0);
     const CaloHit *const pPrimaryTrace = this->TraceHitAssociation(pPrimaryTarget, hitAssociationMapI, hitAssociationMapJ, primaryNSteps);
     const CaloHit *const pSecondaryTrace = this->TraceHitAssociation(pSecondaryTarget, hitAssociationMapI, hitAssociationMapJ, secondaryNSteps);
 
     if ((pPrimaryTrace == pSecondaryTrace) || (secondaryNSteps < 5))
-        return pPrimaryTarget;
+    {
+        const LArCaloHit *const pLArPrimaryTrace{dynamic_cast<const LArCaloHit *const>(pPrimaryTrace)};
+        if (!pLArPrimaryTrace)
+            return nullptr;
 
-    return NULL;
+        if (pLArCaloHit->GetLArTPCVolumeId() == pLArPrimaryTrace->GetLArTPCVolumeId() &&
+            pLArCaloHit->GetDaughterVolumeId() == pLArPrimaryTrace->GetDaughterVolumeId())
+        {
+            return pPrimaryTarget;
+        }
+        else
+        {
+            return nullptr;
+        }
+    }
+
+    return nullptr;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
