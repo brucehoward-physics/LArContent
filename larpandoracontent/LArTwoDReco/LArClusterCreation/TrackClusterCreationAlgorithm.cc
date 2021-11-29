@@ -51,6 +51,21 @@ StatusCode TrackClusterCreationAlgorithm::Run()
 
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, this->AddFilteredCaloHits(selectedCaloHitList, rejectedCaloHitList, hitToClusterMap));
 
+
+    CaloHitList skipped;
+    for (const CaloHit *const pCaloHit : *pCaloHitList)
+    {
+        if (hitToClusterMap.find(pCaloHit) == hitToClusterMap.end())
+            skipped.emplace_back(pCaloHit);
+    }
+    OrderedCaloHitList orderedSkipped;
+    orderedSkipped.Add(skipped);
+    this->MakePrimaryAssociations(orderedSkipped, forwardHitAssociationMap, backwardHitAssociationMap);
+    this->MakeSecondaryAssociations(orderedSkipped, forwardHitAssociationMap, backwardHitAssociationMap);
+    HitJoinMap skipJoinMap;
+    this->IdentifyJoins(orderedSkipped, forwardHitAssociationMap, backwardHitAssociationMap, skipJoinMap);
+    this->CreateClusters(orderedSkipped, skipJoinMap, hitToClusterMap);
+
     return STATUS_CODE_SUCCESS;
 }
 
