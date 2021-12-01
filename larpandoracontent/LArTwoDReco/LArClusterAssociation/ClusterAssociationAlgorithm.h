@@ -72,6 +72,14 @@ protected:
 
 private:
     /**
+     *  @brief Check cross TPC volume cluster associations to look for overlap in drift time (hits deposited in different volumes in
+     *  overlapping drift windows cannot be from the same trajectory) and remove impossible associations
+     *
+     *  @param clusterAssociationMap The input/output cluster association map
+     */
+    void CheckInterTPCVolumeAssociations(ClusterAssociationMap &clusterAssociationMap) const;
+
+    /**
      *  @brief  Unambiguous propagation
      *
      *  @param  pCluster address of the cluster to propagate
