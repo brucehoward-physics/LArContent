@@ -112,6 +112,15 @@ protected:
      *  @param  clusterMergeMap the map of cluster merges
      */
     virtual void FillClusterMergeMap(const ClusterAssociationMatrix &clusterAssociationMatrix, ClusterMergeMap &clusterMergeMap) const = 0;
+
+private:
+    /**
+     *  @brief Check cross TPC volume cluster associations to look for overlap in drift time (hits deposited in different volumes in
+     *  overlapping drift windows cannot be from the same trajectory) and remove impossible associations
+     *
+     *  @param clusterAssociationMatrix The input/output cluster association matrix
+     */
+    void CheckInterTPCVolumeAssociations(ClusterAssociationMatrix &clusterAssociationMatrix) const;
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------
