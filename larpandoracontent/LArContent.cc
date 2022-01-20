@@ -198,6 +198,7 @@
 #include "larpandoracontent/LArTwoDReco/TwoDParticleCreationAlgorithm.h"
 
 #include "larpandoracontent/LArUtility/DaughterVolumeCatalogAlgorithm.h"
+#include "larpandoracontent/LArUtility/DaughterMultiVolumeCatalogAlgorithm.h"
 #include "larpandoracontent/LArUtility/ListChangingAlgorithm.h"
 #include "larpandoracontent/LArUtility/ListDeletionAlgorithm.h"
 #include "larpandoracontent/LArUtility/ListMergingAlgorithm.h"
@@ -314,6 +315,7 @@
     d("LArListDeletion",                        ListDeletionAlgorithm)                                                          \
     d("LArListMerging",                         ListMergingAlgorithm)                                                           \
     d("LArDaughterVolumeCatalog",               DaughterVolumeCatalogAlgorithm)                                                 \
+    d("LArDaughterMultiVolumeCatalog",          DaughterMultiVolumeCatalogAlgorithm)                                            \
     d("LArPfoHitCleaning",                      PfoHitCleaningAlgorithm)                                                        \
     d("LArListPruning",                         ListPruningAlgorithm)                                                           \
     d("LArCandidateVertexCreation",             CandidateVertexCreationAlgorithm)                                               \
