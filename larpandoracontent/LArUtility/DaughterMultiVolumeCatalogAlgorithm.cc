@@ -35,7 +35,7 @@ StatusCode DaughterMultiVolumeCatalogAlgorithm::Run()
     std::map<std::string, CaloHitList> clstvolumesToHitsMap;
     unsigned int clusterNumber = 0;
 
-    PANDORA_MONITORING_API(SetEveDisplayParameters(this->GetPandora(), true, DETECTOR_VIEW_XZ, -1.f, 1.f, 1.f));
+    //PANDORA_MONITORING_API(SetEveDisplayParameters(this->GetPandora(), true, DETECTOR_VIEW_XZ, -1.f, 1.f, 1.f));
 
     const ClusterList *pClustersU(nullptr);
     const ClusterList *pClustersV(nullptr);
@@ -186,12 +186,12 @@ StatusCode DaughterMultiVolumeCatalogAlgorithm::Run()
         }
     }
 
-    for (const auto & [ key, hits ] : clstvolumesToHitsMap)
-    {
-        PANDORA_MONITORING_API(VisualizeCaloHits(this->GetPandora(), &hits, key, AUTOITER));
-    }
+    //for (const auto & [ key, hits ] : clstvolumesToHitsMap)
+    //{
+    //    PANDORA_MONITORING_API(VisualizeCaloHits(this->GetPandora(), &hits, key, AUTOITER));
+    //}
 
-    PANDORA_MONITORING_API(ViewEvent(this->GetPandora()));
+    //PANDORA_MONITORING_API(ViewEvent(this->GetPandora()));
 
     return STATUS_CODE_SUCCESS;
 }
