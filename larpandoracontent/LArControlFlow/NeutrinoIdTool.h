@@ -70,6 +70,13 @@ private:
          */
         void GetFeatureVector(LArMvaHelper::MvaFeatureVector &featureVector) const;
 
+	/**
+         *  @brief  Get the feature "names" vector for the MVA
+         *
+         *  @param  nameVector empty std::string vector to populate
+         */
+        void GetNameVector(std::vector<std::string> &nameVector) const;
+
         /**
          *  @brief  Get the probability that this slice contains a neutrino interaction
          *
@@ -147,6 +154,7 @@ private:
 
         bool m_isAvailable;                             ///< Is the feature vector available
         LArMvaHelper::MvaFeatureVector m_featureVector; ///< The MVA feature vector
+	std::vector<std::string>   m_featureNameVector; ///< MVA feature "names" in a vector
         const NeutrinoIdTool *const m_pTool;            ///< The tool that owns this
     };
 
@@ -246,6 +254,9 @@ private:
     void SelectPfos(const pandora::PfoList &pfos, pandora::PfoList &selectedPfos) const;
 
     pandora::StatusCode ReadSettings(const pandora::TiXmlHandle xmlHandle);
+
+    // Output
+    bool m_shouldWriteFeatures; ///< Write MVA features to metadata as well?
 
     // Training
     bool m_useTrainingMode;           ///< Should use training mode. If true, training examples will be written to the output file
