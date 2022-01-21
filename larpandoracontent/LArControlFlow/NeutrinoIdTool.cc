@@ -27,6 +27,7 @@ namespace lar_content
 
 template <typename T>
 NeutrinoIdTool<T>::NeutrinoIdTool() :
+    m_shouldWriteFeatures(false),
     m_useTrainingMode(false),
     m_selectNuanceCode(false),
     m_nuance(-std::numeric_limits<int>::max()),
@@ -251,17 +252,52 @@ void NeutrinoIdTool<T>::SelectPfosByProbability(const pandora::Algorithm *const 
     {
         const float nuProbability(sliceFeaturesVector.at(sliceIndex).GetNeutrinoProbability(m_mva));
 
+	LArMvaHelper::MvaFeatureVector mvaFeaturesVec;
+	sliceFeaturesVector.at(sliceIndex).GetFeatureVector(mvaFeaturesVec);
+	std::vector<std::string> mvaFeaturesNameVec;
+	sliceFeaturesVector.at(sliceIndex).GetNameVector(mvaFeaturesNameVec);
+
         for (const ParticleFlowObject *const pPfo : crSliceHypotheses.at(sliceIndex))
         {
+	    // TEST PRINTOUTS /////////
+	    std::cout << "Slice MVA Features (Cosmic hypoth): ";
+	    for ( auto const& iFeature : mvaFeaturesVec ) {
+	      std::cout << iFeature.Get() << " ";
+	    }
+	    std::cout << "... score = " << nuProbability;
+	    std::cout << std::endl;
+	    ///////////////
+
             object_creation::ParticleFlowObject::Metadata metadata;
             metadata.m_propertiesToAdd["NuScore"] = nuProbability;
+	    // If desired, write the features to the metadata as well
+	    if ( m_shouldWriteFeatures ) {
+	      for ( unsigned int idxFeat = 0; idxFeat <= mvaFeaturesVec.size(); ++idxFeat ) {
+		metadata.m_propertiesToAdd[ mvaFeaturesNameVec.at(idxFeat) ] = mvaFeaturesVec.at(idxFeat).Get();
+	      }
+	    }
             PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::ParticleFlowObject::AlterMetadata(*pAlgorithm, pPfo, metadata));
         }
 
         for (const ParticleFlowObject *const pPfo : nuSliceHypotheses.at(sliceIndex))
         {
+	    // TEST PRINTOUTS /////////
+	    std::cout << "Slice MVA Features (Nu hypoth): ";
+            for (auto const& iFeature : mvaFeaturesVec ){
+	      std::cout << iFeature.Get() << " ";
+            }
+	    std::cout << "... score = " << nuProbability;
+	    std::cout << std::endl;
+            ///////////////
+
             object_creation::ParticleFlowObject::Metadata metadata;
             metadata.m_propertiesToAdd["NuScore"] = nuProbability;
+	    // If desired, write the features to the metadata as well
+	    if ( m_shouldWriteFeatures ) {
+	      for ( unsigned int idxFeat = 0; idxFeat <= mvaFeaturesVec.size(); ++idxFeat ) {
+		metadata.m_propertiesToAdd[ mvaFeaturesNameVec.at(idxFeat) ] = mvaFeaturesVec.at(idxFeat).Get();
+              }
+            }
             PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::ParticleFlowObject::AlterMetadata(*pAlgorithm, pPfo, metadata));
         }
 
@@ -393,15 +429,36 @@ NeutrinoIdTool<T>::SliceFeatures::SliceFeatures(const PfoList &nuPfos, const Pfo
         const float crFracHitsInLongestTrack = static_cast<float>(nCRHitsMax) / static_cast<float>(nCRHitsTotal);
 
         // Push the features to the feature vector
+	// TODO: Not sure if these name strings will do much to the memory burden...
+	//   if so could explore putting these in "if ( m_shouldWriteFeatures )" checks
+	m_featureNameVector.push_back("nuNFinalStatePfos");
         m_featureVector.push_back(nuNFinalStatePfos);
+
+	m_featureNameVector.push_back("nuNHitsTotal");
         m_featureVector.push_back(nuNHitsTotal);
+
+	m_featureNameVector.push_back("nuVertexY");
         m_featureVector.push_back(nuVertexY);
+
+	m_featureNameVector.push_back("nuWeightedDirZ");
         m_featureVector.push_back(nuWeightedDirZ);
+
+	m_featureNameVector.push_back("nuNSpacePointsInSphere");
         m_featureVector.push_back(nuNSpacePointsInSphere);
+
+	m_featureNameVector.push_back("nuEigenRatioInSphere");
         m_featureVector.push_back(nuEigenRatioInSphere);
+
+	m_featureNameVector.push_back("crLongestTrackDirY");
         m_featureVector.push_back(crLongestTrackDirY);
+
+	m_featureNameVector.push_back("crLongestTrackDeflection");
         m_featureVector.push_back(crLongestTrackDeflection);
+
+	m_featureNameVector.push_back("crFracHitsInLongestTrack");
         m_featureVector.push_back(crFracHitsInLongestTrack);
+
+	m_featureNameVector.push_back("nCRHitsMax");
         m_featureVector.push_back(nCRHitsMax);
 
         m_isAvailable = true;
@@ -429,6 +486,17 @@ void NeutrinoIdTool<T>::SliceFeatures::GetFeatureVector(LArMvaHelper::MvaFeature
         throw StatusCodeException(STATUS_CODE_NOT_FOUND);
 
     featureVector.insert(featureVector.end(), m_featureVector.begin(), m_featureVector.end());
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+template <typename T>
+void NeutrinoIdTool<T>::SliceFeatures::GetNameVector(std::vector<std::string> &nameVector) const
+{
+    if (!m_isAvailable)
+      throw StatusCodeException(STATUS_CODE_NOT_FOUND);
+
+    nameVector.insert(nameVector.end(), m_featureNameVector.begin(), m_featureNameVector.end());
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -549,6 +617,8 @@ void NeutrinoIdTool<T>::SliceFeatures::GetPointsInSphere(const CartesianPointVec
 template <typename T>
 StatusCode NeutrinoIdTool<T>::ReadSettings(const TiXmlHandle xmlHandle)
 {
+    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "ShouldWriteFeatures", m_shouldWriteFeatures));
+
     PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "UseTrainingMode", m_useTrainingMode));
 
     if (m_useTrainingMode)
