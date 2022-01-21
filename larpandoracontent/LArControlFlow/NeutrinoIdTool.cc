@@ -259,20 +259,11 @@ void NeutrinoIdTool<T>::SelectPfosByProbability(const pandora::Algorithm *const 
 
         for (const ParticleFlowObject *const pPfo : crSliceHypotheses.at(sliceIndex))
         {
-	    // TEST PRINTOUTS /////////
-	    std::cout << "Slice MVA Features (Cosmic hypoth): ";
-	    for ( auto const& iFeature : mvaFeaturesVec ) {
-	      std::cout << iFeature.Get() << " ";
-	    }
-	    std::cout << "... score = " << nuProbability;
-	    std::cout << std::endl;
-	    ///////////////
-
             object_creation::ParticleFlowObject::Metadata metadata;
             metadata.m_propertiesToAdd["NuScore"] = nuProbability;
 	    // If desired, write the features to the metadata as well
 	    if ( m_shouldWriteFeatures ) {
-	      for ( unsigned int idxFeat = 0; idxFeat <= mvaFeaturesVec.size(); ++idxFeat ) {
+	      for ( unsigned int idxFeat = 0; idxFeat < mvaFeaturesVec.size(); ++idxFeat ) {
 		metadata.m_propertiesToAdd[ mvaFeaturesNameVec.at(idxFeat) ] = mvaFeaturesVec.at(idxFeat).Get();
 	      }
 	    }
@@ -281,20 +272,11 @@ void NeutrinoIdTool<T>::SelectPfosByProbability(const pandora::Algorithm *const 
 
         for (const ParticleFlowObject *const pPfo : nuSliceHypotheses.at(sliceIndex))
         {
-	    // TEST PRINTOUTS /////////
-	    std::cout << "Slice MVA Features (Nu hypoth): ";
-            for (auto const& iFeature : mvaFeaturesVec ){
-	      std::cout << iFeature.Get() << " ";
-            }
-	    std::cout << "... score = " << nuProbability;
-	    std::cout << std::endl;
-            ///////////////
-
             object_creation::ParticleFlowObject::Metadata metadata;
             metadata.m_propertiesToAdd["NuScore"] = nuProbability;
 	    // If desired, write the features to the metadata as well
 	    if ( m_shouldWriteFeatures ) {
-	      for ( unsigned int idxFeat = 0; idxFeat <= mvaFeaturesVec.size(); ++idxFeat ) {
+	      for ( unsigned int idxFeat = 0; idxFeat < mvaFeaturesVec.size(); ++idxFeat ) {
 		metadata.m_propertiesToAdd[ mvaFeaturesNameVec.at(idxFeat) ] = mvaFeaturesVec.at(idxFeat).Get();
               }
             }
