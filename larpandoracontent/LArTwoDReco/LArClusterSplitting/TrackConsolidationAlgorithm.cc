@@ -8,6 +8,8 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 
+#include "larpandoracontent/LArObjects/LArCaloHit.h"
+
 #include "larpandoracontent/LArTwoDReco/LArClusterSplitting/TrackConsolidationAlgorithm.h"
 
 using namespace pandora;
@@ -56,6 +58,46 @@ void TrackConsolidationAlgorithm::GetReclusteredHits(const TwoDSlidingFitResult 
 
     CaloHitList associatedHits, caloHitListJ;
     pClusterJ->GetOrderedCaloHitList().FillCaloHitList(caloHitListJ);
+
+    // Check inter-volume TPC mixing - for now copy the code here...
+    //if( !this->CheckInterTPCVolumeAssociations(pClusterI, pClusterJ) ) return;
+    // Re-implementing Andy Chappell's function here basically
+    //std::cout << "doing the intervolume check in TrackConsolidationAlg" << std::endl;
+    CaloHitList caloHitList_Check;
+    pClusterI->GetOrderedCaloHitList().FillCaloHitList(caloHitList_Check);
+    if (caloHitList_Check.empty())
+      return;
+    // ATTN: Early 2D clustering should preclude input clusters containing mixed volumes, so just check the first hit
+    const LArCaloHit *const pTargetLArCaloHit{dynamic_cast<const LArCaloHit *const>(caloHitList_Check.front())};
+    if (!pTargetLArCaloHit)
+      return;
+    const unsigned int clusterTpcVolume{pTargetLArCaloHit->GetLArTPCVolumeId()};
+    const unsigned int clusterDaughterVolume{pTargetLArCaloHit->GetDaughterVolumeId()};
+
+    CaloHitList caloHitListOther_Check;
+    pClusterJ->GetOrderedCaloHitList().FillCaloHitList(caloHitListOther_Check);
+    if (caloHitListOther_Check.empty())
+      return;
+    // ATTN: Early 2D clustering should preclude input clusters containing mixed volumes, so just check the first hit
+    const LArCaloHit *const pOtherLArCaloHit{dynamic_cast<const LArCaloHit *const>(caloHitListOther_Check.front())};
+    if (!pOtherLArCaloHit)
+      return;
+    const unsigned int otherTpcVolume{pOtherLArCaloHit->GetLArTPCVolumeId()};
+    const unsigned int otherDaughterVolume{pOtherLArCaloHit->GetDaughterVolumeId()};
+
+    if ( clusterTpcVolume != otherTpcVolume || clusterDaughterVolume != otherDaughterVolume ) {
+      // Volumes differ, confirm association valid
+      // just skip all for now
+      return;
+      // ----
+      float clusterXmin{0.f}, clusterXmax{0.f}, otherXmin{0.f}, otherXmax{0.f};
+      pClusterI->GetClusterSpanX(clusterXmin, clusterXmax);
+      pClusterJ->GetClusterSpanX(otherXmin, otherXmax);
+      const bool overlap{(clusterXmin >= otherXmin && clusterXmin < otherXmax) ||
+	  (clusterXmax > otherXmin && clusterXmax <= otherXmax) || (clusterXmin <= otherXmin && clusterXmax >= otherXmax)};
+      if (overlap) return;
+    }
+    // -------------------------------------------------------------
 
     float minL(std::numeric_limits<float>::max());
     float maxL(std::numeric_limits<float>::max());
@@ -129,6 +171,48 @@ void TrackConsolidationAlgorithm::GetReclusteredHits(const TwoDSlidingFitResult 
         }
     }
 }
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+/*
+bool CheckInterTPCVolumeAssociations( const pandora::Cluster *const pTargetCluster, const pandora::Cluster *const pOtherCluster ) const
+{
+    // Re-implementing Andy Chappell's function here basically
+    CaloHitList caloHitList;
+    pTargetCluster->GetOrderedCaloHitList().FillCaloHitList(caloHitList);
+    if (caloHitList.empty())
+        return false;
+    // ATTN: Early 2D clustering should preclude input clusters containing mixed volumes, so just check the first hit
+    const LArCaloHit *const pTargetLArCaloHit{dynamic_cast<const LArCaloHit *const>(caloHitList.front())};
+    if (!pTargetLArCaloHit)
+        return false;
+    const unsigned int clusterTpcVolume{pTargetLArCaloHit->GetLArTPCVolumeId()};
+    const unsigned int clusterDaughterVolume{pTargetLArCaloHit->GetDaughterVolumeId()};
+
+    CaloHitList caloHitListOther;
+    pOtherCluster->GetOrderedCaloHitList().FillCaloHitList(caloHitListOther);
+    if (caloHitListOther.empty())
+      return false;
+    // ATTN: Early 2D clustering should preclude input clusters containing mixed volumes, so just check the first hit
+    const LArCaloHit *const pOtherLArCaloHit{dynamic_cast<const LArCaloHit *const>(caloHitListOther.front())};
+    if (!pOtherLArCaloHit)
+      return false;
+    const unsigned int otherTpcVolume{pOtherLArCaloHit->GetLArTPCVolumeId()};
+    const unsigned int otherDaughterVolume{pOtherLArCaloHit->GetDaughterVolumeId()};
+
+    if ( clusterTpcVolume != otherTpcVolume || clusterDaughterVolume != otherDaughterVolume ) {
+        // Volumes differ, confirm association valid
+        float clusterXmin{0.f}, clusterXmax{0.f}, otherXmin{0.f}, otherXmax{0.f};
+	pTargetCluster->GetClusterSpanX(clusterXmin, clusterXmax);
+	pOtherCluster->GetClusterSpanX(otherXmin, otherXmax);
+	const bool overlap{(clusterXmin >= otherXmin && clusterXmin < otherXmax) ||
+	    (clusterXmax > otherXmin && clusterXmax <= otherXmax) || (clusterXmin <= otherXmin && clusterXmax >= otherXmax)};
+	if (overlap) return false;
+    }
+
+    return true;
+}
+*/
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 

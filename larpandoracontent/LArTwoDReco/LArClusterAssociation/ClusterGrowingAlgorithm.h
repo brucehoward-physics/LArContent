@@ -50,6 +50,14 @@ protected:
 
 private:
     /**
+     *  @brief Check cross TPC volume cluster associations to look for overlap in drift time (hits deposited in different volumes in
+     *  overlapping drift windows cannot be from the same trajectory) and remove impossible associations
+     *
+     *  @param clusterMergeMap The input/output cluster merge map
+     */
+    void CheckInterTPCVolumeAssociations(ClusterMergeMap &clusterMergeMap) const;
+
+    /**
      *  @brief Get List of non-seed clusters
      *
      *  @param inputClusters the input vector of clean clusters

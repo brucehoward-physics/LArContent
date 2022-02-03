@@ -51,6 +51,14 @@ private:
     void GetReclusteredHits(const TwoDSlidingFitResult &slidingFitResult, const pandora::Cluster *const pTargetCluster,
         ClusterToHitMap &caloHitsToAdd, ClusterToHitMap &caloHitsToRemove) const;
 
+    // /**
+    //   *  @brief Determine if hit should be associated or not
+    //   * 
+    //   *  @param pTargetCluster  cluster to be checked against
+    //   *  @param pCaloHit  the calohit to pass or reject association with
+    //   */
+    //bool CheckInterTPCVolumeAssociations( const pandora::Cluster *const pTargetCluster, const pandora::Cluster *const pOtherCluster ) const;
+
     float m_maxTransverseDisplacement; ///<
     float m_minAssociatedSpan;         ///<
     float m_minAssociatedFraction;     ///<

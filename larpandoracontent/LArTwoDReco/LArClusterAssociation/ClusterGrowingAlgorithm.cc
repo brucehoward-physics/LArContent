@@ -9,6 +9,7 @@
 #include "Pandora/AlgorithmHeaders.h"
 
 #include "larpandoracontent/LArHelpers/LArClusterHelper.h"
+#include "larpandoracontent/LArObjects/LArCaloHit.h"
 
 #include "larpandoracontent/LArTwoDReco/LArClusterAssociation/ClusterGrowingAlgorithm.h"
 
@@ -61,10 +62,111 @@ StatusCode ClusterGrowingAlgorithm::Run()
         if (clusterMergeMap.empty())
             break;
 
+	this->CheckInterTPCVolumeAssociations(clusterMergeMap);
+	if (clusterMergeMap.empty())
+	    break;
+
         this->MergeClusters(clusterMergeMap);
     }
 
     return STATUS_CODE_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+// COPIED FROM CLUSTER ASSOCIATION AND EDITED...
+void ClusterGrowingAlgorithm::CheckInterTPCVolumeAssociations(ClusterMergeMap &clusterMergeMap) const
+{
+    // BH
+    std::cout << "Running alg by Andy C to check for unwanted multivolume matches... " << std::endl;
+    unsigned int removedFwd = 0;
+    unsigned int removedBwd = 0;
+    unsigned int removedOther = 0;
+    //////////
+
+    // Loop over the associations and get the forward and backward association cluster sets for each one
+    // Delete clusters from the sets as appropriate and if the association map ends up empty, delete that too
+    ClusterSet unassociatedClusters;
+    for (auto & [ pCluster, merges ] : clusterMergeMap)
+    {
+        CaloHitList caloHitList;
+        pCluster->GetOrderedCaloHitList().FillCaloHitList(caloHitList);
+        if (caloHitList.empty())
+	    continue;
+        // ATTN: Early 2D clustering should preclude input clusters containing mixed volumes, so just check the first hit
+        const LArCaloHit *const pLArCaloHit{dynamic_cast<const LArCaloHit *const>(caloHitList.front())};
+        if (!pLArCaloHit)
+	    continue;
+        const unsigned int clusterTpcVolume{pLArCaloHit->GetLArTPCVolumeId()};
+        const unsigned int clusterDaughterVolume{pLArCaloHit->GetDaughterVolumeId()};
+
+	std::cout << "Merges: before " << merges.size() << ", ";
+
+	auto mergeIter{merges.begin()};
+        while (mergeIter != merges.end())
+        {
+	    std::cout << merges.size() << std::endl;
+            const Cluster *const mergeCandidate{*mergeIter};
+
+	    CaloHitList otherHitList;
+	    mergeCandidate->GetOrderedCaloHitList().FillCaloHitList(otherHitList);
+	    if (otherHitList.empty())
+	        continue;
+	    // ATTN: Early 2D clustering should preclude input clusters containing mixed volumes, so just check the first hit
+	    const LArCaloHit *const pOtherLArCaloHit{dynamic_cast<const LArCaloHit *const>(otherHitList.front())};
+	    if (!pOtherLArCaloHit)
+	        continue;
+	    const unsigned int otherTpcVolume{pOtherLArCaloHit->GetLArTPCVolumeId()};
+	    const unsigned int otherDaughterVolume{pOtherLArCaloHit->GetDaughterVolumeId()};
+
+	    if (clusterTpcVolume == otherTpcVolume && clusterDaughterVolume == otherDaughterVolume)
+	    {
+	        // Same volume
+	        ++mergeIter;
+	    }
+	    else
+	    {
+	        // Different volume, needs checked
+	        //std::cout << "|---------> Found different volumes. First cluster has "
+		//	  << caloHitList.size() << " hits, second (fwd) " << otherHitList.size() << " hits ... ";
+		float clusterXmin{0.f}, clusterXmax{0.f}, otherXmin{0.f}, otherXmax{0.f};
+		pCluster->GetClusterSpanX(clusterXmin, clusterXmax);
+		mergeCandidate->GetClusterSpanX(otherXmin, otherXmax);
+		//const bool overlap{(clusterXmin >= otherXmin && clusterXmin < otherXmax) ||
+		//    (clusterXmax > otherXmin && clusterXmax <= otherXmax) || (clusterXmin <= otherXmin && clusterXmax >= otherXmax)};
+		if (true) //(overlap) -> BH: for now try removing all of them
+		{
+		    // Drift coordinates overlap across volumes, veto
+		    mergeIter = merges.erase(mergeIter);
+		    // BH
+		    //std::cout << "Removed! (overlap " << overlap << ")" << std::endl;
+		    removedFwd+=1;
+		}
+		else
+		{
+		    // No X overlap, move on
+		    //std::cout << "Saved." << std::endl; // BH
+		    ++mergeIter;
+		}
+	    }
+
+	    std::cout << " after " << merges.size() << ", ";
+	}
+
+        if (merges.empty())
+	    unassociatedClusters.insert(pCluster);
+    }
+
+    for (const Cluster *const pCluster : unassociatedClusters) {
+        std::cout << " (removed b/c empty) " << std::endl;
+        clusterMergeMap.erase(pCluster);
+	removedOther += 1;
+    }
+
+    std::cout << " & done with this one." << std::endl;
+
+    // BH
+    std::cout << "Removed clusters === F:" << removedFwd << " B:" << removedBwd << " O:" << removedOther << std::endl;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

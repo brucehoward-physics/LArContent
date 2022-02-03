@@ -43,6 +43,15 @@ protected:
     virtual void PopulateClusterMergeMap(const pandora::ClusterVector &clusterVector, ClusterMergeMap &clusterMergeMap) const = 0;
 
     /**
+     *  @brief Check cross TPC volume cluster associations to look for overlap in drift time (hits deposited in different volumes in
+     *  overlapping drift windows cannot be from the same trajectory) and remove impossible associations
+     *
+     *  @param clusterMergeMap The input/output cluster merge map
+     */
+    // Note in ClusterGrowing this was put in private but there is no private here. Could make one but is it okay to have in protected?
+    void CheckInterTPCVolumeAssociations(ClusterMergeMap &clusterMergeMap) const;
+
+    /**
      *  @brief  Merge associated clusters
      *
      *  @param  clusterVector the vector of clean clusters
