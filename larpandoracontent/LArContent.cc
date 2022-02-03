@@ -199,6 +199,8 @@
 
 #include "larpandoracontent/LArUtility/DaughterVolumeCatalogAlgorithm.h"
 #include "larpandoracontent/LArUtility/DaughterMultiVolumeCatalogAlgorithm.h"
+#include "larpandoracontent/LArUtility/DaughterMultiVolumeCatalogNuAlgorithm.h"
+#include "larpandoracontent/LArUtility/DaughterMultiVolumePfoCatalogAlgorithm.h"
 #include "larpandoracontent/LArUtility/ListChangingAlgorithm.h"
 #include "larpandoracontent/LArUtility/ListDeletionAlgorithm.h"
 #include "larpandoracontent/LArUtility/ListMergingAlgorithm.h"
@@ -316,6 +318,8 @@
     d("LArListMerging",                         ListMergingAlgorithm)                                                           \
     d("LArDaughterVolumeCatalog",               DaughterVolumeCatalogAlgorithm)                                                 \
     d("LArDaughterMultiVolumeCatalog",          DaughterMultiVolumeCatalogAlgorithm)                                            \
+    d("LArDaughterMultiVolumeCatalogNu",        DaughterMultiVolumeCatalogNuAlgorithm)                                          \
+    d("LArDaughterMultiVolumePfoCatalog",       DaughterMultiVolumePfoCatalogAlgorithm)                                         \
     d("LArPfoHitCleaning",                      PfoHitCleaningAlgorithm)                                                        \
     d("LArListPruning",                         ListPruningAlgorithm)                                                           \
     d("LArCandidateVertexCreation",             CandidateVertexCreationAlgorithm)                                               \
