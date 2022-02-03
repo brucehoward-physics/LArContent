@@ -1,7 +1,7 @@
 /**
- *  @file   larpandoracontent/LArUtility/DaughterMultiVolumeCatalogAlgorithm.cc
+ *  @file   larpandoracontent/LArUtility/DaughterMultiVolumeCatalogNuAlgorithm.cc
  *
- *  @brief  Implementation of the algorithm showing multi-volume clusters (trying to identify mis-matches) 
+ *  @brief  Implementation of the algorithm showing multi-volume clusters (trying to identify mis-matches) -- Nu Version 
  *  $Log: $
  */
 
@@ -11,7 +11,7 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 
-#include "larpandoracontent/LArUtility/DaughterMultiVolumeCatalogAlgorithm.h"
+#include "larpandoracontent/LArUtility/DaughterMultiVolumeCatalogNuAlgorithm.h"
 
 #include "larpandoracontent/LArObjects/LArCaloHit.h"
 
@@ -22,14 +22,16 @@ using namespace pandora;
 namespace lar_content
 {
 
-DaughterMultiVolumeCatalogAlgorithm::DaughterMultiVolumeCatalogAlgorithm()
+DaughterMultiVolumeCatalogNuAlgorithm::DaughterMultiVolumeCatalogNuAlgorithm()
 {
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-StatusCode DaughterMultiVolumeCatalogAlgorithm::Run()
+StatusCode DaughterMultiVolumeCatalogNuAlgorithm::Run()
 {
+  std::cout << "RUNNING NU VERSION OF Multi-volume search algorithm..." << std::endl;
+
     // Will a CaloHitVector work here or does it need to be CaloHitList??
     std::map<std::string, CaloHitList> clstvolumesToHitsMap;
     unsigned int clusterNumber = 0;
@@ -197,7 +199,7 @@ StatusCode DaughterMultiVolumeCatalogAlgorithm::Run()
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-StatusCode DaughterMultiVolumeCatalogAlgorithm::ReadSettings(const TiXmlHandle xmlHandle)
+StatusCode DaughterMultiVolumeCatalogNuAlgorithm::ReadSettings(const TiXmlHandle xmlHandle)
 {
     // Don't think this is needed, is it?
     //(void)xmlHandle;
