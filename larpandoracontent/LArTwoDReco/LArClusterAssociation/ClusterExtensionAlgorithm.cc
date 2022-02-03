@@ -29,6 +29,12 @@ void ClusterExtensionAlgorithm::PopulateClusterMergeMap(const ClusterVector &clu
 
 void ClusterExtensionAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssociationMatrix &clusterAssociationMatrix) const
 {
+  // BH
+  std::cout << "Running alg by Andy C to check for unwanted multivolume matches... " << std::endl;
+  unsigned int removed = 0;
+  unsigned int removedOther = 0;
+  /////////////////////
+
     ClusterSet unassociatedClusters;
     for (auto & [ pCluster, clusterAssociationMap ] : clusterAssociationMatrix)
     {
@@ -64,21 +70,28 @@ void ClusterExtensionAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssociati
             }
             else
             {
+	        std::cout << "|---------> Found different volumes. First cluster has " 
+			  << caloHitList.size() << " hits, second " << otherHitList.size() << " hits ... ";
                 // Volumes differ, confirm association valid
                 float clusterXmin{0.f}, clusterXmax{0.f}, otherXmin{0.f}, otherXmax{0.f};
                 pCluster->GetClusterSpanX(clusterXmin, clusterXmax);
                 pOtherCluster->GetClusterSpanX(otherXmin, otherXmax);
                 const bool overlap{(clusterXmin >= otherXmin && clusterXmin < otherXmax) ||
                     (clusterXmax > otherXmin && clusterXmax <= otherXmax) || (clusterXmin <= otherXmin && clusterXmax >= otherXmax)};
-                if (overlap)
+                if (true) //(overlap) -> BH: try forcing it to reject all of them...
                 {
                     // Drift coordinates overlap across volumes, veto
                     assocIter = clusterAssociationMap.erase(assocIter);
+		    // BH
+		    std::cout << "Removed! (overlap " << overlap << ")" << std::endl;
+		    removed+=1;
                 }
                 else
                 {
                     // No X overlap, move on
                     ++assocIter;
+		    // BH
+		    std::cout << "Saved." << std::endl;
                 }
             }
         }
@@ -86,8 +99,14 @@ void ClusterExtensionAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssociati
             unassociatedClusters.insert(pCluster);
     }
 
-    for (const Cluster *const pCluster : unassociatedClusters)
+    for (const Cluster *const pCluster : unassociatedClusters) {
         clusterAssociationMatrix.erase(pCluster);
+	// BH
+	removedOther+=1;
+    }
+
+    // BH
+    std::cout << "Removed clusters === Norm:" << removed << " O:" << removedOther << std::endl;
 }
 
 } // namespace lar_content

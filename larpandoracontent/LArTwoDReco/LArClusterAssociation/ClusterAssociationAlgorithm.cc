@@ -88,6 +88,13 @@ StatusCode ClusterAssociationAlgorithm::Run()
 
 void ClusterAssociationAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssociationMap &clusterAssociationMap) const
 {
+  // BH
+  std::cout << "Running alg by Andy C to check for unwanted multivolume matches... " << std::endl;
+  unsigned int removedFwd = 0;
+  unsigned int removedBwd = 0;
+  unsigned int removedOther = 0;
+  //////////
+
     // Loop over the associations and get the forward and backward association cluster sets for each one
     // Delete clusters from the sets as appropriate and if the association map ends up empty, delete that too
     ClusterSet unassociatedClusters;
@@ -124,20 +131,26 @@ void ClusterAssociationAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssocia
             }
             else
             {
+	        std::cout << "|---------> Found different volumes. First cluster has " 
+			  << caloHitList.size() << " hits, second (fwd) " << otherHitList.size() << " hits ... ";
                 // Volumes differ, confirm association valid
                 float clusterXmin{0.f}, clusterXmax{0.f}, otherXmin{0.f}, otherXmax{0.f};
                 pCluster->GetClusterSpanX(clusterXmin, clusterXmax);
                 pOtherCluster->GetClusterSpanX(otherXmin, otherXmax);
                 const bool overlap{(clusterXmin >= otherXmin && clusterXmin < otherXmax) ||
                     (clusterXmax > otherXmin && clusterXmax <= otherXmax) || (clusterXmin <= otherXmin && clusterXmax >= otherXmax)};
-                if (overlap)
+                if (true) //(overlap) -> BH: for now try removing all of them
                 {
                     // Drift coordinates overlap across volumes, veto
                     forwardAssocIter = associations.m_forwardAssociations.erase(forwardAssocIter);
+		    // BH
+		    std::cout << "Removed! (overlap " << overlap << ")" << std::endl;
+		    removedFwd+=1;
                 }
                 else
                 {
                     // No X overlap, move on
+		    std::cout << "Saved." << std::endl; // BH
                     ++forwardAssocIter;
                 }
             }
@@ -164,20 +177,26 @@ void ClusterAssociationAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssocia
             }
             else
             {
+	        std::cout << "|---------> Found different volumes. First cluster has "
+			  << caloHitList.size() << " hits, second (bwd) " << otherHitList.size() << " hits ... ";
                 // Volumes differ, confirm association valid
                 float clusterXmin{0.f}, clusterXmax{0.f}, otherXmin{0.f}, otherXmax{0.f};
                 pCluster->GetClusterSpanX(clusterXmin, clusterXmax);
                 pOtherCluster->GetClusterSpanX(otherXmin, otherXmax);
                 const bool overlap{(clusterXmin >= otherXmin && clusterXmin < otherXmax) ||
                     (clusterXmax > otherXmin && clusterXmax <= otherXmax) || (clusterXmin <= otherXmin && clusterXmax >= otherXmax)};
-                if (overlap)
+                if (true) //(overlap) -> BH: for now try removing all of them
                 {
                     // Drift coordinates overlap across volumes, veto
                     backwardAssocIter = associations.m_backwardAssociations.erase(backwardAssocIter);
+		    // BH
+		    std::cout << "Removed! (overlap " << overlap << ")" << std::endl;
+		    removedBwd += 1;
                 }
                 else
                 {
                     // No X overlap, move on
+		    std::cout << "Saved." << std::endl; // BH
                     ++backwardAssocIter;
                 }
             }
@@ -186,8 +205,13 @@ void ClusterAssociationAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssocia
             unassociatedClusters.insert(pCluster);
     }
 
-    for (const Cluster *const pCluster : unassociatedClusters)
+    for (const Cluster *const pCluster : unassociatedClusters) {
         clusterAssociationMap.erase(pCluster);
+	removedOther += 1;
+    }
+
+    // BH
+    std::cout << "Removed clusters === F:" << removedFwd << " B:" << removedBwd << " O:" << removedOther << std::endl;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
