@@ -8,6 +8,7 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 
+#include "larpandoracontent/LArObjects/LArCaloHit.h"
 #include "larpandoracontent/LArTwoDReco/LArClusterSplitting/TrackConsolidationAlgorithm.h"
 
 using namespace pandora;
@@ -53,6 +54,9 @@ void TrackConsolidationAlgorithm::GetReclusteredHits(const TwoDSlidingFitResult 
     ClusterToHitMap &caloHitsToAddI, ClusterToHitMap &caloHitsToRemoveJ) const
 {
     const Cluster *const pClusterI(slidingFitResultI.GetCluster());
+
+    if (!this->CheckInterTPCVolumeAssociations(pClusterI, pClusterJ))
+        return;
 
     CaloHitList associatedHits, caloHitListJ;
     pClusterJ->GetOrderedCaloHitList().FillCaloHitList(caloHitListJ);
@@ -128,6 +132,65 @@ void TrackConsolidationAlgorithm::GetReclusteredHits(const TwoDSlidingFitResult 
             caloHitsToRemoveJ[pClusterJ].push_back(pCaloHit);
         }
     }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+bool TrackConsolidationAlgorithm::CheckInterTPCVolumeAssociations(const Cluster *const pCluster1, const Cluster *const pCluster2) const
+{
+    CaloHitList caloHitList1;
+    pCluster1->GetOrderedCaloHitList().FillCaloHitList(caloHitList1);
+    if (caloHitList1.empty())
+        return true;
+    // ATTN: Early 2D clustering should preclude input clusters containing mixed volumes, so just check the first hit
+    const LArCaloHit *const pLArCaloHit1{dynamic_cast<const LArCaloHit *const>(caloHitList1.front())};
+    if (!pLArCaloHit1)
+        return true;
+    const unsigned int clusterTpcVolume1{pLArCaloHit1->GetLArTPCVolumeId()};
+    const unsigned int clusterDaughterVolume1{pLArCaloHit1->GetDaughterVolumeId()};
+
+    CaloHitList caloHitList2;
+    pCluster2->GetOrderedCaloHitList().FillCaloHitList(caloHitList2);
+    if (caloHitList2.empty())
+        return true;
+    const LArCaloHit *const pLArCaloHit2{dynamic_cast<const LArCaloHit *const>(caloHitList2.front())};
+    if (!pLArCaloHit2)
+        return true;
+    const unsigned int clusterTpcVolume2{pLArCaloHit2->GetLArTPCVolumeId()};
+    const unsigned int clusterDaughterVolume2{pLArCaloHit2->GetDaughterVolumeId()};
+
+    if (clusterTpcVolume1 == clusterTpcVolume2 && clusterDaughterVolume1 == clusterDaughterVolume2)
+    {
+        // Same volume, no problem
+        return true;
+    }
+    else
+    {
+        // Volumes differ, confirm association valid
+        float clusterXmin{0.f}, clusterXmax{0.f}, otherXmin{0.f}, otherXmax{0.f};
+        float clusterZmin{0.f}, clusterZmax{0.f}, otherZmin{0.f}, otherZmax{0.f};
+        pCluster1->GetClusterSpanX(clusterXmin, clusterXmax);
+        pCluster1->GetClusterSpanZ(clusterXmin, clusterXmax, clusterZmin, clusterZmax);
+        pCluster2->GetClusterSpanX(otherXmin, otherXmax);
+        pCluster2->GetClusterSpanZ(otherXmin, otherXmax, otherZmin, otherZmax);
+        otherXmin -= 0.5f; otherXmax += 0.5f;
+        const bool xOverlap{(clusterXmin >= otherXmin && clusterXmin <= otherXmax) ||
+            (clusterXmax >= otherXmin && clusterXmax <= otherXmax) || (clusterXmin <= otherXmin && clusterXmax >= otherXmax)};
+        // const bool zOverlap{(clusterZmin >= otherZmin && clusterZmin <= otherZmax) ||
+        //     (clusterZmax >= otherZmin && clusterZmax <= otherZmax) || (clusterZmin <= otherZmin && clusterZmax >= otherZmax)};
+        if (xOverlap)
+        {
+            // Drift coordinates overlap across volumes, veto
+            return false;
+        }
+        else
+        {
+            // No X overlap, no problem
+            return true;
+        }
+    }
+
+    return true;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
