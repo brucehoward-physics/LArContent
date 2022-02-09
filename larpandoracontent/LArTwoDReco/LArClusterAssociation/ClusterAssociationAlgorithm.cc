@@ -102,7 +102,7 @@ void ClusterAssociationAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssocia
         if (!pLArCaloHit)
             continue;
         const unsigned int clusterTpcVolume{pLArCaloHit->GetLArTPCVolumeId()};
-        const unsigned int clusterDaughterVolume{pLArCaloHit->GetDaughterVolumeId()};
+        const unsigned int clusterSubVolume{pLArCaloHit->GetSubVolumeId()};
         auto forwardAssocIter{associations.m_forwardAssociations.begin()};
         while (forwardAssocIter != associations.m_forwardAssociations.end())
         {
@@ -115,37 +115,17 @@ void ClusterAssociationAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssocia
             if (!pLArOtherHit)
                 continue;
             const unsigned int otherTpcVolume{pLArOtherHit->GetLArTPCVolumeId()};
-            const unsigned int otherDaughterVolume{pLArOtherHit->GetDaughterVolumeId()};
+            const unsigned int otherSubVolume{pLArOtherHit->GetSubVolumeId()};
 
-            if (clusterTpcVolume == otherTpcVolume && clusterDaughterVolume == otherDaughterVolume)
+            if (clusterTpcVolume == otherTpcVolume && clusterSubVolume == otherSubVolume)
             {
                 // Same volume, move on
                 ++forwardAssocIter;
             }
             else
             {
-                // Volumes differ, confirm association valid
-                float clusterXmin{0.f}, clusterXmax{0.f}, otherXmin{0.f}, otherXmax{0.f};
-                float clusterZmin{0.f}, clusterZmax{0.f}, otherZmin{0.f}, otherZmax{0.f};
-                pCluster->GetClusterSpanX(clusterXmin, clusterXmax);
-                pCluster->GetClusterSpanZ(clusterXmin, clusterXmax, clusterZmin, clusterZmax);
-                pOtherCluster->GetClusterSpanX(otherXmin, otherXmax);
-                pOtherCluster->GetClusterSpanZ(otherXmin, otherXmax, otherZmin, otherZmax);
-                otherXmin -= 0.5f; otherXmax += 0.5f;
-                const bool xOverlap{(clusterXmin >= otherXmin && clusterXmin <= otherXmax) ||
-                    (clusterXmax >= otherXmin && clusterXmax <= otherXmax) || (clusterXmin <= otherXmin && clusterXmax >= otherXmax)};
-//                const bool zOverlap{(clusterZmin >= otherZmin && clusterZmin <= otherZmax) ||
-//                    (clusterZmax >= otherZmin && clusterZmax <= otherZmax) || (clusterZmin <= otherZmin && clusterZmax >= otherZmax)};
-                if (xOverlap)
-                {
-                    // Drift coordinates overlap across volumes, veto
-                    forwardAssocIter = associations.m_forwardAssociations.erase(forwardAssocIter);
-                }
-                else
-                {
-                    // No X overlap, move on
-                    ++forwardAssocIter;
-                }
+                // Volumes differ, veto
+                forwardAssocIter = associations.m_forwardAssociations.erase(forwardAssocIter);
             }
         }
 
@@ -161,37 +141,17 @@ void ClusterAssociationAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssocia
             if (!pLArOtherHit)
                 continue;
             const unsigned int otherTpcVolume{pLArOtherHit->GetLArTPCVolumeId()};
-            const unsigned int otherDaughterVolume{pLArOtherHit->GetDaughterVolumeId()};
+            const unsigned int otherSubVolume{pLArOtherHit->GetSubVolumeId()};
 
-            if (clusterTpcVolume == otherTpcVolume && clusterDaughterVolume == otherDaughterVolume)
+            if (clusterTpcVolume == otherTpcVolume && clusterSubVolume == otherSubVolume)
             {
                 // Same volume, move on
                 ++backwardAssocIter;
             }
             else
             {
-                // Volumes differ, confirm association valid
-                float clusterXmin{0.f}, clusterXmax{0.f}, otherXmin{0.f}, otherXmax{0.f};
-                float clusterZmin{0.f}, clusterZmax{0.f}, otherZmin{0.f}, otherZmax{0.f};
-                pCluster->GetClusterSpanX(clusterXmin, clusterXmax);
-                pCluster->GetClusterSpanZ(clusterXmin, clusterXmax, clusterZmin, clusterZmax);
-                pOtherCluster->GetClusterSpanX(otherXmin, otherXmax);
-                pOtherCluster->GetClusterSpanZ(otherXmin, otherXmax, otherZmin, otherZmax);
-                otherXmin -= 0.5f; otherXmax += 0.5f;
-                const bool xOverlap{(clusterXmin >= otherXmin && clusterXmin <= otherXmax) ||
-                    (clusterXmax >= otherXmin && clusterXmax <= otherXmax) || (clusterXmin <= otherXmin && clusterXmax >= otherXmax)};
-//                const bool zOverlap{(clusterZmin >= otherZmin && clusterZmin <= otherZmax) ||
-//                    (clusterZmax >= otherZmin && clusterZmax <= otherZmax) || (clusterZmin <= otherZmin && clusterZmax >= otherZmax)};
-                if (xOverlap)
-                {
-                    // Drift coordinates overlap across volumes, veto
-                    backwardAssocIter = associations.m_backwardAssociations.erase(backwardAssocIter);
-                }
-                else
-                {
-                    // No X overlap, move on
-                    ++backwardAssocIter;
-                }
+                // Volumes differ, veto
+                backwardAssocIter = associations.m_backwardAssociations.erase(backwardAssocIter);
             }
         }
         if (associations.m_forwardAssociations.empty() && associations.m_backwardAssociations.empty())

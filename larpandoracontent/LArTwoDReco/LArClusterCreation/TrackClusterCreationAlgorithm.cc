@@ -165,7 +165,7 @@ StatusCode TrackClusterCreationAlgorithm::AddFilteredCaloHits(
                         continue;
 
                     if (!(pLArCaloHitI->GetLArTPCVolumeId() == pLArCaloHitJ->GetLArTPCVolumeId() &&
-                        pLArCaloHitI->GetDaughterVolumeId() == pLArCaloHitJ->GetDaughterVolumeId()))
+                        pLArCaloHitI->GetSubVolumeId() == pLArCaloHitJ->GetSubVolumeId()))
                         continue;
 
                     if (pCaloHitI->GetMipEquivalentEnergy() > pCaloHitJ->GetMipEquivalentEnergy())
@@ -239,7 +239,7 @@ void TrackClusterCreationAlgorithm::MakePrimaryAssociations(const OrderedCaloHit
                     if (!pLArCaloHitJ)
                         continue;
                     if (pLArCaloHitI->GetLArTPCVolumeId() == pLArCaloHitJ->GetLArTPCVolumeId() &&
-                        pLArCaloHitI->GetDaughterVolumeId() == pLArCaloHitJ->GetDaughterVolumeId())
+                        pLArCaloHitI->GetSubVolumeId() == pLArCaloHitJ->GetSubVolumeId())
                     {
                         this->CreatePrimaryAssociation(pCaloHitI, pCaloHitJ, forwardHitAssociationMap, backwardHitAssociationMap);
                     }
@@ -276,7 +276,7 @@ void TrackClusterCreationAlgorithm::MakeSecondaryAssociations(const OrderedCaloH
                 if (!pLArForwardHit)
                     continue;
                 if (pLArCaloHit->GetLArTPCVolumeId() == pLArForwardHit->GetLArTPCVolumeId() &&
-                    pLArCaloHit->GetDaughterVolumeId() == pLArForwardHit->GetDaughterVolumeId())
+                    pLArCaloHit->GetSubVolumeId() == pLArForwardHit->GetSubVolumeId())
                 {
                     this->CreateSecondaryAssociation(pCaloHit, pForwardHit, forwardHitAssociationMap, backwardHitAssociationMap);
                 }
@@ -294,7 +294,7 @@ void TrackClusterCreationAlgorithm::MakeSecondaryAssociations(const OrderedCaloH
                 if (!pLArBackwardHit)
                     continue;
                 if (pLArCaloHit->GetLArTPCVolumeId() == pLArBackwardHit->GetLArTPCVolumeId() &&
-                    pLArCaloHit->GetDaughterVolumeId() == pLArBackwardHit->GetDaughterVolumeId())
+                    pLArCaloHit->GetSubVolumeId() == pLArBackwardHit->GetSubVolumeId())
                 {
                     this->CreateSecondaryAssociation(pBackwardHit, pCaloHit, forwardHitAssociationMap, backwardHitAssociationMap);
                 }
@@ -464,7 +464,7 @@ const CaloHit *TrackClusterCreationAlgorithm::GetJoinHit(
     if (!pSecondaryTarget)
     {
         if (pLArCaloHit->GetLArTPCVolumeId() == pLArPrimaryTarget->GetLArTPCVolumeId() &&
-            pLArCaloHit->GetDaughterVolumeId() == pLArPrimaryTarget->GetDaughterVolumeId())
+            pLArCaloHit->GetSubVolumeId() == pLArPrimaryTarget->GetSubVolumeId())
         {
             return pPrimaryTarget;
         }
@@ -485,7 +485,7 @@ const CaloHit *TrackClusterCreationAlgorithm::GetJoinHit(
             return nullptr;
 
         if (pLArCaloHit->GetLArTPCVolumeId() == pLArPrimaryTrace->GetLArTPCVolumeId() &&
-            pLArCaloHit->GetDaughterVolumeId() == pLArPrimaryTrace->GetDaughterVolumeId())
+            pLArCaloHit->GetSubVolumeId() == pLArPrimaryTrace->GetSubVolumeId())
         {
             return pPrimaryTarget;
         }

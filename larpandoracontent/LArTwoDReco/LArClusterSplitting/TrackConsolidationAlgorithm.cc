@@ -147,7 +147,7 @@ bool TrackConsolidationAlgorithm::CheckInterTPCVolumeAssociations(const Cluster 
     if (!pLArCaloHit1)
         return true;
     const unsigned int clusterTpcVolume1{pLArCaloHit1->GetLArTPCVolumeId()};
-    const unsigned int clusterDaughterVolume1{pLArCaloHit1->GetDaughterVolumeId()};
+    const unsigned int clusterSubVolume1{pLArCaloHit1->GetSubVolumeId()};
 
     CaloHitList caloHitList2;
     pCluster2->GetOrderedCaloHitList().FillCaloHitList(caloHitList2);
@@ -157,37 +157,17 @@ bool TrackConsolidationAlgorithm::CheckInterTPCVolumeAssociations(const Cluster 
     if (!pLArCaloHit2)
         return true;
     const unsigned int clusterTpcVolume2{pLArCaloHit2->GetLArTPCVolumeId()};
-    const unsigned int clusterDaughterVolume2{pLArCaloHit2->GetDaughterVolumeId()};
+    const unsigned int clusterSubVolume2{pLArCaloHit2->GetSubVolumeId()};
 
-    if (clusterTpcVolume1 == clusterTpcVolume2 && clusterDaughterVolume1 == clusterDaughterVolume2)
+    if (clusterTpcVolume1 == clusterTpcVolume2 && clusterSubVolume1 == clusterSubVolume2)
     {
         // Same volume, no problem
         return true;
     }
     else
     {
-        // Volumes differ, confirm association valid
-        float clusterXmin{0.f}, clusterXmax{0.f}, otherXmin{0.f}, otherXmax{0.f};
-        float clusterZmin{0.f}, clusterZmax{0.f}, otherZmin{0.f}, otherZmax{0.f};
-        pCluster1->GetClusterSpanX(clusterXmin, clusterXmax);
-        pCluster1->GetClusterSpanZ(clusterXmin, clusterXmax, clusterZmin, clusterZmax);
-        pCluster2->GetClusterSpanX(otherXmin, otherXmax);
-        pCluster2->GetClusterSpanZ(otherXmin, otherXmax, otherZmin, otherZmax);
-        otherXmin -= 0.5f; otherXmax += 0.5f;
-        const bool xOverlap{(clusterXmin >= otherXmin && clusterXmin <= otherXmax) ||
-            (clusterXmax >= otherXmin && clusterXmax <= otherXmax) || (clusterXmin <= otherXmin && clusterXmax >= otherXmax)};
-        // const bool zOverlap{(clusterZmin >= otherZmin && clusterZmin <= otherZmax) ||
-        //     (clusterZmax >= otherZmin && clusterZmax <= otherZmax) || (clusterZmin <= otherZmin && clusterZmax >= otherZmax)};
-        if (xOverlap)
-        {
-            // Drift coordinates overlap across volumes, veto
-            return false;
-        }
-        else
-        {
-            // No X overlap, no problem
-            return true;
-        }
+        // Volumes differ, veto
+        return false;
     }
 
     return true;

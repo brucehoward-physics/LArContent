@@ -41,7 +41,7 @@ void ClusterExtensionAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssociati
         if (!pLArCaloHit)
             continue;
         const unsigned int clusterTpcVolume{pLArCaloHit->GetLArTPCVolumeId()};
-        const unsigned int clusterDaughterVolume{pLArCaloHit->GetDaughterVolumeId()};
+        const unsigned int clusterSubVolume{pLArCaloHit->GetSubVolumeId()};
 
         auto assocIter{clusterAssociationMap.begin()};
         while (assocIter != clusterAssociationMap.end())
@@ -55,35 +55,17 @@ void ClusterExtensionAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssociati
             if (!pLArOtherHit)
                 continue;
             const unsigned int otherTpcVolume{pLArOtherHit->GetLArTPCVolumeId()};
-            const unsigned int otherDaughterVolume{pLArOtherHit->GetDaughterVolumeId()};
+            const unsigned int otherSubVolume{pLArOtherHit->GetSubVolumeId()};
 
-            if (clusterTpcVolume == otherTpcVolume && clusterDaughterVolume == otherDaughterVolume)
+            if (clusterTpcVolume == otherTpcVolume && clusterSubVolume == otherSubVolume)
             {
                 // Same volume, move on
                 ++assocIter;
             }
             else
             {
-                // Volumes differ, confirm association valid
-                float clusterXmin{0.f}, clusterXmax{0.f}, otherXmin{0.f}, otherXmax{0.f};
-                float clusterZmin{0.f}, clusterZmax{0.f}, otherZmin{0.f}, otherZmax{0.f};
-                pCluster->GetClusterSpanX(clusterXmin, clusterXmax);
-                pCluster->GetClusterSpanZ(clusterXmin, clusterXmax, clusterZmin, clusterZmax);
-                pOtherCluster->GetClusterSpanX(otherXmin, otherXmax);
-                pOtherCluster->GetClusterSpanZ(otherXmin, otherXmax, otherZmin, otherZmax);
-                otherXmin -= 0.5f; otherXmax += 0.5f;
-                const bool xOverlap{(clusterXmin >= otherXmin && clusterXmin <= otherXmax) ||
-                    (clusterXmax >= otherXmin && clusterXmax <= otherXmax) || (clusterXmin <= otherXmin && clusterXmax >= otherXmax)};
-                if (xOverlap)
-                {
-                    // Drift coordinates overlap across volumes, veto
-                    assocIter = clusterAssociationMap.erase(assocIter);
-                }
-                else
-                {
-                    // No X overlap, move on
-                    ++assocIter;
-                }
+                // Volumes differ, veto
+                assocIter = clusterAssociationMap.erase(assocIter);
             }
         }
         if (clusterAssociationMap.empty())

@@ -77,7 +77,7 @@ void SimpleClusterCreationAlgorithm::BuildAssociationMap(const CaloHitList &calo
                 continue;
 
             if (pLArCaloHitI->GetLArTPCVolumeId() == pLArCaloHitJ->GetLArTPCVolumeId() &&
-                pLArCaloHitI->GetDaughterVolumeId() == pLArCaloHitJ->GetDaughterVolumeId())
+                pLArCaloHitI->GetSubVolumeId() == pLArCaloHitJ->GetSubVolumeId())
             {
                 if ((pCaloHitI->GetPositionVector() - pCaloHitJ->GetPositionVector()).GetMagnitudeSquared() < m_clusteringWindowSquared)
                 {
