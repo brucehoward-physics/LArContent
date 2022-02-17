@@ -11,6 +11,8 @@
 #include "larpandoracontent/LArHelpers/LArGeometryHelper.h"
 #include "larpandoracontent/LArHelpers/LArPointingClusterHelper.h"
 
+#include "larpandoracontent/LArObjects/LArCaloHit.h"
+
 #include "larpandoracontent/LArTwoDReco/LArClusterSplitting/TwoDSlidingFitSplittingAndSplicingAlgorithm.h"
 
 using namespace pandora;
@@ -132,6 +134,25 @@ void TwoDSlidingFitSplittingAndSplicingAlgorithm::BuildClusterExtensionList(cons
             const Cluster *const pClusterJ = *iterJ;
 
             if (pClusterI == pClusterJ)
+                continue;
+
+            CaloHitList allHitsI;
+            pClusterI->GetOrderedCaloHitList().FillCaloHitList(allHitsI);
+            const LArCaloHit *const pLArCaloHitI{dynamic_cast<const LArCaloHit *const>(allHitsI.front())};
+            if (!pLArCaloHitI)
+                continue;
+            const unsigned int tpcVolumeI{pLArCaloHitI->GetLArTPCVolumeId()};
+            const unsigned int daughterVolumeI{pLArCaloHitI->GetDaughterVolumeId()};
+
+            CaloHitList allHitsJ;
+            pClusterJ->GetOrderedCaloHitList().FillCaloHitList(allHitsJ);
+            const LArCaloHit *const pLArCaloHitJ{dynamic_cast<const LArCaloHit *const>(allHitsJ.front())};
+            if (!pLArCaloHitJ)
+                continue;
+            const unsigned int tpcVolumeJ{pLArCaloHitJ->GetLArTPCVolumeId()};
+            const unsigned int daughterVolumeJ{pLArCaloHitJ->GetDaughterVolumeId()};
+
+            if (tpcVolumeI != tpcVolumeJ || daughterVolumeI != daughterVolumeJ)
                 continue;
 
             // Get the branch and replacement sliding fits for this pair of clusters
