@@ -20,7 +20,7 @@ namespace lar_content
 
 DaughterVolumeCatalogAlgorithm::DaughterVolumeCatalogAlgorithm() :
     m_mergeDriftVolume{true},
-    m_processHits{true},
+    m_processHits{false},
     m_processClusters{false},
     m_processPfos{false}
 {
@@ -127,6 +127,7 @@ StatusCode DaughterVolumeCatalogAlgorithm::ProcessClusters()
 
     for (const auto & [ key, hits ] : volumeToHitsMap)
     {
+        std::cout << key << " " << hits.size() <<std::endl;
         PANDORA_MONITORING_API(VisualizeCaloHits(this->GetPandora(), &hits, key, AUTOITER));
     }
 
@@ -140,7 +141,7 @@ StatusCode DaughterVolumeCatalogAlgorithm::ProcessClusters()
 StatusCode DaughterVolumeCatalogAlgorithm::ProcessPfos()
 {
     const PfoList *pPfoList(nullptr);
-    PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetList(*this, "RecreatedPfos", pPfoList));
+    PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetList(*this, m_pfoListName, pPfoList));
 
     PANDORA_MONITORING_API(SetEveDisplayParameters(this->GetPandora(), true, DETECTOR_VIEW_XZ, -1.f, 1.f, 1.f));
 
@@ -148,7 +149,6 @@ StatusCode DaughterVolumeCatalogAlgorithm::ProcessPfos()
     int i{0};
     for (const ParticleFlowObject *const pPfo : *pPfoList)
     {
-        std::cout << i << std::endl;
         CaloHitList allHits;
         LArPfoHelper::GetAllCaloHits(pPfo, allHits);
         for (const CaloHit *const pCaloHit : allHits)
@@ -170,6 +170,7 @@ StatusCode DaughterVolumeCatalogAlgorithm::ProcessPfos()
 
     for (const auto & [ key, hits ] : volumeToHitsMap)
     {
+        std::cout << key << " " << hits.size() <<std::endl;
         PANDORA_MONITORING_API(VisualizeCaloHits(this->GetPandora(), &hits, key, AUTOITER));
     }
 
@@ -190,6 +191,10 @@ StatusCode DaughterVolumeCatalogAlgorithm::ReadSettings(const TiXmlHandle xmlHan
     if (m_processClusters)
     {
         PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, XmlHelper::ReadValue(xmlHandle, "ClusterListName", m_clusterListName));
+    }
+    if (m_processPfos)
+    {
+        PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, XmlHelper::ReadValue(xmlHandle, "PfoListName", m_pfoListName));
     }
 
     return STATUS_CODE_SUCCESS;

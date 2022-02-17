@@ -171,7 +171,6 @@ inline LArCaloHit::LArCaloHit(const LArCaloHitParameters &parameters) :
 {
     // ATTN: Currently a DUNE FD HD hack
     m_subVolumeId = m_daughterVolumeId % 2;
-    std::cout << "Sub: " << m_subVolumeId << std::endl;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

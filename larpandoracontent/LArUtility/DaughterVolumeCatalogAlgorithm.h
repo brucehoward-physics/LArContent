@@ -36,6 +36,7 @@ private:
     bool m_processClusters;         //< Whether or not to process cluster-level information
     bool m_processPfos;             //< Whether or not to process PFO-level information
     std::string m_clusterListName;  //< The name of the cluster list, if processing clusters
+    std::string m_pfoListName;      //< The name of the PFO list, if processing PFOs
 };
 
 } // namespace lar_content
