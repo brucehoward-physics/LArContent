@@ -209,6 +209,8 @@
 #include "larpandoracontent/LArVertex/MvaVertexSelectionAlgorithm.h"
 #include "larpandoracontent/LArVertex/VertexRefinementAlgorithm.h"
 
+#include "larpandoracontent/LArUtility/DumpLArCaloHits.h"
+
 #include "larpandoracontent/LArContent.h"
 
 // clang-format off
@@ -312,6 +314,7 @@
     d("LArListChanging",                        ListChangingAlgorithm)                                                          \
     d("LArListDeletion",                        ListDeletionAlgorithm)                                                          \
     d("LArListMerging",                         ListMergingAlgorithm)                                                           \
+    d("DumpLArCaloHits",                        DumpLArCaloHits)                                                                \
     d("LArPfoHitCleaning",                      PfoHitCleaningAlgorithm)                                                        \
     d("LArListPruning",                         ListPruningAlgorithm)                                                           \
     d("LArCandidateVertexCreation",             CandidateVertexCreationAlgorithm)                                               \
