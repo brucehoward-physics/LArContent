@@ -9,6 +9,7 @@
 #include "Pandora/AlgorithmHeaders.h"
 
 #include "larpandoracontent/LArHelpers/LArClusterHelper.h"
+#include "larpandoracontent/LArObjects/LArCaloHit.h"
 
 #include "larpandoracontent/LArTwoDReco/LArClusterCreation/SimpleClusterCreationAlgorithm.h"
 
@@ -62,22 +63,34 @@ void SimpleClusterCreationAlgorithm::BuildAssociationMap(const CaloHitList &calo
 {
     for (const CaloHit *const pCaloHitI : caloHitList)
     {
+        const LArCaloHit *const pLArCaloHitI{dynamic_cast<const LArCaloHit *const>(pCaloHitI)};
+        if (!pLArCaloHitI)
+            continue;
+
         for (const CaloHit *const pCaloHitJ : caloHitList)
         {
             if (pCaloHitI == pCaloHitJ)
                 continue;
 
-            if ((pCaloHitI->GetPositionVector() - pCaloHitJ->GetPositionVector()).GetMagnitudeSquared() < m_clusteringWindowSquared)
+            const LArCaloHit *const pLArCaloHitJ{dynamic_cast<const LArCaloHit *const>(pCaloHitJ)};
+            if (!pLArCaloHitJ)
+                continue;
+
+            if (pLArCaloHitI->GetLArTPCVolumeId() == pLArCaloHitJ->GetLArTPCVolumeId() &&
+                pLArCaloHitI->GetSubVolumeId() == pLArCaloHitJ->GetSubVolumeId())
             {
-                CaloHitList &caloHitListI(hitAssociationMap[pCaloHitI]);
+                if ((pCaloHitI->GetPositionVector() - pCaloHitJ->GetPositionVector()).GetMagnitudeSquared() < m_clusteringWindowSquared)
+                {
+                    CaloHitList &caloHitListI(hitAssociationMap[pCaloHitI]);
 
-                if (caloHitListI.end() == std::find(caloHitListI.begin(), caloHitListI.end(), pCaloHitJ))
-                    caloHitListI.push_back(pCaloHitJ);
+                    if (caloHitListI.end() == std::find(caloHitListI.begin(), caloHitListI.end(), pCaloHitJ))
+                        caloHitListI.push_back(pCaloHitJ);
 
-                CaloHitList &caloHitListJ(hitAssociationMap[pCaloHitI]);
+                    CaloHitList &caloHitListJ(hitAssociationMap[pCaloHitI]);
 
-                if (caloHitListJ.end() == std::find(caloHitListJ.begin(), caloHitListJ.end(), pCaloHitI))
-                    caloHitListJ.push_back(pCaloHitI);
+                    if (caloHitListJ.end() == std::find(caloHitListJ.begin(), caloHitListJ.end(), pCaloHitI))
+                        caloHitListJ.push_back(pCaloHitI);
+                }
             }
         }
     }

@@ -8,6 +8,7 @@
 
 #include "Pandora/AlgorithmHeaders.h"
 
+#include "larpandoracontent/LArObjects/LArCaloHit.h"
 #include "larpandoracontent/LArTwoDReco/LArClusterSplitting/TrackConsolidationAlgorithm.h"
 
 using namespace pandora;
@@ -53,6 +54,9 @@ void TrackConsolidationAlgorithm::GetReclusteredHits(const TwoDSlidingFitResult 
     ClusterToHitMap &caloHitsToAddI, ClusterToHitMap &caloHitsToRemoveJ) const
 {
     const Cluster *const pClusterI(slidingFitResultI.GetCluster());
+
+    if (!this->CheckInterTPCVolumeAssociations(pClusterI, pClusterJ))
+        return;
 
     CaloHitList associatedHits, caloHitListJ;
     pClusterJ->GetOrderedCaloHitList().FillCaloHitList(caloHitListJ);
@@ -128,6 +132,45 @@ void TrackConsolidationAlgorithm::GetReclusteredHits(const TwoDSlidingFitResult 
             caloHitsToRemoveJ[pClusterJ].push_back(pCaloHit);
         }
     }
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+bool TrackConsolidationAlgorithm::CheckInterTPCVolumeAssociations(const Cluster *const pCluster1, const Cluster *const pCluster2) const
+{
+    CaloHitList caloHitList1;
+    pCluster1->GetOrderedCaloHitList().FillCaloHitList(caloHitList1);
+    if (caloHitList1.empty())
+        return true;
+    // ATTN: Early 2D clustering should preclude input clusters containing mixed volumes, so just check the first hit
+    const LArCaloHit *const pLArCaloHit1{dynamic_cast<const LArCaloHit *const>(caloHitList1.front())};
+    if (!pLArCaloHit1)
+        return true;
+    const unsigned int clusterTpcVolume1{pLArCaloHit1->GetLArTPCVolumeId()};
+    const unsigned int clusterSubVolume1{pLArCaloHit1->GetSubVolumeId()};
+
+    CaloHitList caloHitList2;
+    pCluster2->GetOrderedCaloHitList().FillCaloHitList(caloHitList2);
+    if (caloHitList2.empty())
+        return true;
+    const LArCaloHit *const pLArCaloHit2{dynamic_cast<const LArCaloHit *const>(caloHitList2.front())};
+    if (!pLArCaloHit2)
+        return true;
+    const unsigned int clusterTpcVolume2{pLArCaloHit2->GetLArTPCVolumeId()};
+    const unsigned int clusterSubVolume2{pLArCaloHit2->GetSubVolumeId()};
+
+    if (clusterTpcVolume1 == clusterTpcVolume2 && clusterSubVolume1 == clusterSubVolume2)
+    {
+        // Same volume, no problem
+        return true;
+    }
+    else
+    {
+        // Volumes differ, veto
+        return false;
+    }
+
+    return true;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

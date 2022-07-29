@@ -9,6 +9,7 @@
 #include "Pandora/AlgorithmHeaders.h"
 
 #include "larpandoracontent/LArHelpers/LArClusterHelper.h"
+#include "larpandoracontent/LArObjects/LArCaloHit.h"
 
 #include "larpandoracontent/LArTwoDReco/LArClusterAssociation/ClusterAssociationAlgorithm.h"
 
@@ -33,6 +34,7 @@ StatusCode ClusterAssociationAlgorithm::Run()
 
     ClusterAssociationMap clusterAssociationMap;
     this->PopulateClusterAssociationMap(clusterVector, clusterAssociationMap);
+    this->CheckInterTPCVolumeAssociations(clusterAssociationMap);
 
     m_mergeMade = true;
 
@@ -80,6 +82,84 @@ StatusCode ClusterAssociationAlgorithm::Run()
     }
 
     return STATUS_CODE_SUCCESS;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+void ClusterAssociationAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssociationMap &clusterAssociationMap) const
+{
+    // Loop over the associations and get the forward and backward association cluster sets for each one
+    // Delete clusters from the sets as appropriate and if the association map ends up empty, delete that too
+    ClusterSet unassociatedClusters;
+    for (auto & [ pCluster, associations ] : clusterAssociationMap)
+    {
+        CaloHitList caloHitList;
+        pCluster->GetOrderedCaloHitList().FillCaloHitList(caloHitList);
+        if (caloHitList.empty())
+            continue;
+        // ATTN: Early 2D clustering should preclude input clusters containing mixed volumes, so just check the first hit
+        const LArCaloHit *const pLArCaloHit{dynamic_cast<const LArCaloHit *const>(caloHitList.front())};
+        if (!pLArCaloHit)
+            continue;
+        const unsigned int clusterTpcVolume{pLArCaloHit->GetLArTPCVolumeId()};
+        const unsigned int clusterSubVolume{pLArCaloHit->GetSubVolumeId()};
+        auto forwardAssocIter{associations.m_forwardAssociations.begin()};
+        while (forwardAssocIter != associations.m_forwardAssociations.end())
+        {
+            const Cluster *const pOtherCluster{*forwardAssocIter};
+            CaloHitList otherHitList;
+            pOtherCluster->GetOrderedCaloHitList().FillCaloHitList(otherHitList);
+            if (otherHitList.empty())
+                continue;
+            const LArCaloHit *const pLArOtherHit{dynamic_cast<const LArCaloHit *const>(otherHitList.front())};
+            if (!pLArOtherHit)
+                continue;
+            const unsigned int otherTpcVolume{pLArOtherHit->GetLArTPCVolumeId()};
+            const unsigned int otherSubVolume{pLArOtherHit->GetSubVolumeId()};
+
+            if (clusterTpcVolume == otherTpcVolume && clusterSubVolume == otherSubVolume)
+            {
+                // Same volume, move on
+                ++forwardAssocIter;
+            }
+            else
+            {
+                // Volumes differ, veto
+                forwardAssocIter = associations.m_forwardAssociations.erase(forwardAssocIter);
+            }
+        }
+
+        auto backwardAssocIter{associations.m_backwardAssociations.begin()};
+        while (backwardAssocIter != associations.m_backwardAssociations.end())
+        {
+            const Cluster *const pOtherCluster{*backwardAssocIter};
+            CaloHitList otherHitList;
+            pOtherCluster->GetOrderedCaloHitList().FillCaloHitList(otherHitList);
+            if (otherHitList.empty())
+                continue;
+            const LArCaloHit *const pLArOtherHit{dynamic_cast<const LArCaloHit *const>(otherHitList.front())};
+            if (!pLArOtherHit)
+                continue;
+            const unsigned int otherTpcVolume{pLArOtherHit->GetLArTPCVolumeId()};
+            const unsigned int otherSubVolume{pLArOtherHit->GetSubVolumeId()};
+
+            if (clusterTpcVolume == otherTpcVolume && clusterSubVolume == otherSubVolume)
+            {
+                // Same volume, move on
+                ++backwardAssocIter;
+            }
+            else
+            {
+                // Volumes differ, veto
+                backwardAssocIter = associations.m_backwardAssociations.erase(backwardAssocIter);
+            }
+        }
+        if (associations.m_forwardAssociations.empty() && associations.m_backwardAssociations.empty())
+            unassociatedClusters.insert(pCluster);
+    }
+
+    for (const Cluster *const pCluster : unassociatedClusters)
+        clusterAssociationMap.erase(pCluster);
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
