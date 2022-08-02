@@ -40,6 +40,12 @@ void BoundedClusterMopUpAlgorithm::ClusterMopUp(const ClusterList &pfoClusters, 
 
     for (const Cluster *const pPfoCluster : sortedPfoClusters)
     {
+      CaloHitList clusterHitList;
+      pPfoCluster->GetOrderedCaloHitList().FillCaloHitList(clusterHitList);
+      if (clusterHitList.size() <= 3)
+	continue;
+      try
+      {
         const TwoDSlidingShowerFitResult fitResult(pPfoCluster, m_slidingFitWindow, slidingFitPitch, m_showerEdgeMultiplier);
 
         ShowerPositionMap showerPositionMap;
@@ -58,6 +64,12 @@ void BoundedClusterMopUpAlgorithm::ClusterMopUp(const ClusterList &pfoClusters, 
             if (!associationDetails.insert(AssociationDetails::value_type(pPfoCluster, boundedFraction)).second)
                 throw StatusCodeException(STATUS_CODE_ALREADY_PRESENT);
         }
+      }
+      catch (const StatusCodeException &e)
+      {
+	if (e.GetStatusCode() != STATUS_CODE_NOT_INITIALIZED)
+	  throw e;
+      }
     }
 
     this->MakeClusterMerges(clusterAssociationMap);
