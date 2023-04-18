@@ -18,7 +18,7 @@ using namespace pandora;
 namespace lar_content
 {
 
-ClusterAssociationAlgorithm::ClusterAssociationAlgorithm() : m_mergeMade(false), m_resolveAmbiguousAssociations(true)
+ClusterAssociationAlgorithm::ClusterAssociationAlgorithm() : m_mergeMade(false), m_resolveAmbiguousAssociations(true), m_checkInterTPCVolumeAssociations(false)
 {
 }
 
@@ -34,7 +34,7 @@ StatusCode ClusterAssociationAlgorithm::Run()
 
     ClusterAssociationMap clusterAssociationMap;
     this->PopulateClusterAssociationMap(clusterVector, clusterAssociationMap);
-    this->CheckInterTPCVolumeAssociations(clusterAssociationMap);
+    if( m_checkInterTPCVolumeAssociations ) this->CheckInterTPCVolumeAssociations(clusterAssociationMap);
 
     m_mergeMade = true;
 
@@ -335,6 +335,11 @@ StatusCode ClusterAssociationAlgorithm::ReadSettings(const TiXmlHandle xmlHandle
 {
     PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=,
         XmlHelper::ReadValue(xmlHandle, "ResolveAmbiguousAssociations", m_resolveAmbiguousAssociations));
+
+    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=,
+        XmlHelper::ReadValue(xmlHandle, "CheckInterTPCVolumeAssociations", m_checkInterTPCVolumeAssociations));
+
+    //std::cout << "[ClusterAssociationAlgorithm] CHECKING INTER TPC VOLUME ASSNS? --> " << m_checkInterTPCVolumeAssociations << std::endl;
 
     return STATUS_CODE_SUCCESS;
 }

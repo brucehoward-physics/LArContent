@@ -20,7 +20,14 @@ namespace lar_content
  */
 class ClusterExtensionAlgorithm : public ClusterMergingAlgorithm
 {
+public:
+  /**                                                                                                                                                                                                     
+   *  @brief  Default constructor                                                                                                                                                                         
+   */
+  ClusterExtensionAlgorithm();
+
 protected:
+    virtual pandora::StatusCode ReadSettings(const pandora::TiXmlHandle xmlHandle);
     void PopulateClusterMergeMap(const pandora::ClusterVector &clusterVector, ClusterMergeMap &clusterMergeMatrix) const;
 
     /**
@@ -121,6 +128,8 @@ private:
      *  @param clusterAssociationMatrix The input/output cluster association matrix
      */
     void CheckInterTPCVolumeAssociations(ClusterAssociationMatrix &clusterAssociationMatrix) const;
+
+    bool m_checkInterTPCVolumeAssociations; ///< Whether to check for mixing among tpc volumes
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------

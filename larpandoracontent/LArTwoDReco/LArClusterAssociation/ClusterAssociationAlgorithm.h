@@ -131,6 +131,7 @@ private:
     mutable bool m_mergeMade;
 
     bool m_resolveAmbiguousAssociations; ///< Whether to resolve ambiguous associations
+    bool m_checkInterTPCVolumeAssociations; ///< Whether to check for mixing among tpc volumes
 };
 
 } // namespace lar_content

@@ -65,6 +65,7 @@ private:
     float m_maxTransverseDisplacement; ///<
     float m_minAssociatedSpan;         ///<
     float m_minAssociatedFraction;     ///<
+    bool m_checkInterTPCVolumeAssociations; ///< Whether to check for mixing among tpc volumes
 };
 
 } // namespace lar_content

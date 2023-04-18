@@ -19,7 +19,8 @@ namespace lar_content
 TrackConsolidationAlgorithm::TrackConsolidationAlgorithm() :
     m_maxTransverseDisplacement(1.f),
     m_minAssociatedSpan(1.f),
-    m_minAssociatedFraction(0.5f)
+    m_minAssociatedFraction(0.5f),
+    m_checkInterTPCVolumeAssociations(false)
 {
 }
 
@@ -55,7 +56,7 @@ void TrackConsolidationAlgorithm::GetReclusteredHits(const TwoDSlidingFitResult 
 {
     const Cluster *const pClusterI(slidingFitResultI.GetCluster());
 
-    if (!this->CheckInterTPCVolumeAssociations(pClusterI, pClusterJ))
+    if (m_checkInterTPCVolumeAssociations && !this->CheckInterTPCVolumeAssociations(pClusterI, pClusterJ))
         return;
 
     CaloHitList associatedHits, caloHitListJ;
@@ -185,6 +186,11 @@ StatusCode TrackConsolidationAlgorithm::ReadSettings(const TiXmlHandle xmlHandle
 
     PANDORA_RETURN_RESULT_IF_AND_IF(
         STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "MinAssociatedFraction", m_minAssociatedFraction));
+
+    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=,
+        XmlHelper::ReadValue(xmlHandle, "CheckInterTPCVolumeAssociations", m_checkInterTPCVolumeAssociations));
+
+    //std::cout << "[TrackConsolidationAlgorithm] CHECKING INTER TPC VOLUME ASSNS? --> " << m_checkInterTPCVolumeAssociations << std::endl;
 
     return TwoDSlidingFitConsolidationAlgorithm::ReadSettings(xmlHandle);
 }

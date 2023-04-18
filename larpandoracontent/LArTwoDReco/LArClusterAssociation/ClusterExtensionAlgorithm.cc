@@ -17,11 +17,15 @@ using namespace pandora;
 namespace lar_content
 {
 
+ClusterExtensionAlgorithm::ClusterExtensionAlgorithm() : m_checkInterTPCVolumeAssociations(false)
+{
+}
+
 void ClusterExtensionAlgorithm::PopulateClusterMergeMap(const ClusterVector &clusterVector, ClusterMergeMap &clusterMergeMap) const
 {
     ClusterAssociationMatrix clusterAssociationMatrix;
     this->FillClusterAssociationMatrix(clusterVector, clusterAssociationMatrix);
-    this->CheckInterTPCVolumeAssociations(clusterAssociationMatrix);
+    if( m_checkInterTPCVolumeAssociations ) this->CheckInterTPCVolumeAssociations(clusterAssociationMatrix);
     this->FillClusterMergeMap(clusterAssociationMatrix, clusterMergeMap);
 }
 
@@ -74,6 +78,16 @@ void ClusterExtensionAlgorithm::CheckInterTPCVolumeAssociations(ClusterAssociati
 
     for (const Cluster *const pCluster : unassociatedClusters)
         clusterAssociationMatrix.erase(pCluster);
+}
+
+StatusCode ClusterExtensionAlgorithm::ReadSettings(const TiXmlHandle xmlHandle)
+{
+    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=,
+        XmlHelper::ReadValue(xmlHandle, "CheckInterTPCVolumeAssociations", m_checkInterTPCVolumeAssociations));
+
+    //std::cout << "[ClusterExtensionAlgorithm] CHECKING INTER TPC VOLUME ASSNS? --> " << m_checkInterTPCVolumeAssociations << std::endl;
+
+    return ClusterMergingAlgorithm::ReadSettings(xmlHandle);
 }
 
 } // namespace lar_content
