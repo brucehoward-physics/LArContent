@@ -18,7 +18,7 @@ using namespace pandora;
 namespace lar_content
 {
 
-SimpleClusterCreationAlgorithm::SimpleClusterCreationAlgorithm() : m_clusteringWindowSquared(1.f)
+SimpleClusterCreationAlgorithm::SimpleClusterCreationAlgorithm() : m_clusteringWindowSquared(1.f), m_checkInterTPCVolumeAssociations(false)
 {
 }
 
@@ -76,8 +76,8 @@ void SimpleClusterCreationAlgorithm::BuildAssociationMap(const CaloHitList &calo
             if (!pLArCaloHitJ)
                 continue;
 
-            if (pLArCaloHitI->GetLArTPCVolumeId() == pLArCaloHitJ->GetLArTPCVolumeId() &&
-                pLArCaloHitI->GetSubVolumeId() == pLArCaloHitJ->GetSubVolumeId())
+            if (!m_checkInterTPCVolumeAssociations || (pLArCaloHitI->GetLArTPCVolumeId() == pLArCaloHitJ->GetLArTPCVolumeId() &&
+						       pLArCaloHitI->GetSubVolumeId() == pLArCaloHitJ->GetSubVolumeId()) )
             {
                 if ((pCaloHitI->GetPositionVector() - pCaloHitJ->GetPositionVector()).GetMagnitudeSquared() < m_clusteringWindowSquared)
                 {
@@ -91,7 +91,9 @@ void SimpleClusterCreationAlgorithm::BuildAssociationMap(const CaloHitList &calo
                     if (caloHitListJ.end() == std::find(caloHitListJ.begin(), caloHitListJ.end(), pCaloHitI))
                         caloHitListJ.push_back(pCaloHitI);
                 }
-            }
+            } else {
+	      std::cout << "BH -- skipping hit association due to inter tpc volume check in Simple Cluster Creation Algorithm" << std::endl;
+	    }
         }
     }
 }
@@ -161,6 +163,9 @@ StatusCode SimpleClusterCreationAlgorithm::ReadSettings(const TiXmlHandle xmlHan
     float clusteringWindow = std::sqrt(m_clusteringWindowSquared);
     PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "ClusteringWindow", clusteringWindow));
     m_clusteringWindowSquared = clusteringWindow * clusteringWindow;
+
+    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=,
+	XmlHelper::ReadValue(xmlHandle, "CheckInterTPCVolumeAssociations", m_checkInterTPCVolumeAssociations));
 
     return STATUS_CODE_SUCCESS;
 }
