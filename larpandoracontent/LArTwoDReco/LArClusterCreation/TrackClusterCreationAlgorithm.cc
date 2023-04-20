@@ -155,6 +155,8 @@ StatusCode TrackClusterCreationAlgorithm::AddFilteredCaloHits(
                 if (!pLArCaloHitI)
                     continue;
 
+		//std::cout << pLArCaloHitI->GetLArTPCVolumeId() << " " << pLArCaloHitI->GetSubVolumeId() << std::endl;
+
                 const CaloHit *pClosestHit = NULL;
                 float closestSeparationSquared(m_minCaloHitSeparationSquared);
 
@@ -164,9 +166,13 @@ StatusCode TrackClusterCreationAlgorithm::AddFilteredCaloHits(
                     if (!pLArCaloHitJ)
                         continue;
 
+		    //std::cout << pLArCaloHitJ->GetLArTPCVolumeId() << " " << pLArCaloHitJ->GetSubVolumeId() << std::endl;
+
                     if (!(pLArCaloHitI->GetLArTPCVolumeId() == pLArCaloHitJ->GetLArTPCVolumeId() &&
-                        pLArCaloHitI->GetSubVolumeId() == pLArCaloHitJ->GetSubVolumeId()))
+			  pLArCaloHitI->GetSubVolumeId() == pLArCaloHitJ->GetSubVolumeId())) {
+		        std::cout << "BH caught hits to skip due to volume checking during 'carryOn'" << std::endl;
                         continue;
+		    }
 
                     if (pCaloHitI->GetMipEquivalentEnergy() > pCaloHitJ->GetMipEquivalentEnergy())
                         continue;
@@ -384,6 +390,21 @@ void TrackClusterCreationAlgorithm::CreatePrimaryAssociation(const CaloHit *cons
     if (distanceSquared > m_maxCaloHitSeparationSquared)
         return;
 
+    // BH BH BH
+    const LArCaloHit *const pLArCaloHitI{dynamic_cast<const LArCaloHit *const>(pCaloHitI)};
+    if (!pLArCaloHitI)
+      return;
+
+    const LArCaloHit *const pLArCaloHitJ{dynamic_cast<const LArCaloHit *const>(pCaloHitJ)};
+    if (!pLArCaloHitJ)
+      return;
+
+    if ( pLArCaloHitI->GetLArTPCVolumeId()!=pLArCaloHitJ->GetLArTPCVolumeId() || pLArCaloHitI->GetSubVolumeId()!=pLArCaloHitJ->GetSubVolumeId()) {
+      std::cout << "BH BH BH: Throwing out something in Primary Associations due to LArCaloHit Checks." << std::endl;
+      return;
+    }
+    // -- -- --
+
     HitAssociationMap::iterator forwardIter = forwardHitAssociationMap.find(pCaloHitI);
 
     if (forwardHitAssociationMap.end() == forwardIter)
@@ -412,6 +433,21 @@ void TrackClusterCreationAlgorithm::CreatePrimaryAssociation(const CaloHit *cons
 void TrackClusterCreationAlgorithm::CreateSecondaryAssociation(const CaloHit *const pCaloHitI, const CaloHit *const pCaloHitJ,
     HitAssociationMap &forwardHitAssociationMap, HitAssociationMap &backwardHitAssociationMap) const
 {
+    // BH BH BH
+    const LArCaloHit *const pLArCaloHitI{dynamic_cast<const LArCaloHit *const>(pCaloHitI)};
+    if (!pLArCaloHitI)
+      return;
+
+    const LArCaloHit *const pLArCaloHitJ{dynamic_cast<const LArCaloHit *const>(pCaloHitJ)};
+    if (!pLArCaloHitJ)
+      return;
+
+    if ( pLArCaloHitI->GetLArTPCVolumeId()!=pLArCaloHitJ->GetLArTPCVolumeId() || pLArCaloHitI->GetSubVolumeId()!=pLArCaloHitJ->GetSubVolumeId()) {
+      std::cout<< "BH BH BH: Throwing out something in Primary Associations due to LArCaloHit Checks." << std::endl;
+	return;
+    }
+    // -- -- --
+
     HitAssociationMap::iterator forwardIter = forwardHitAssociationMap.find(pCaloHitI);
     HitAssociationMap::iterator backwardIter = backwardHitAssociationMap.find(pCaloHitJ);
 
