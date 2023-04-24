@@ -92,7 +92,7 @@ void SimpleClusterCreationAlgorithm::BuildAssociationMap(const CaloHitList &calo
                         caloHitListJ.push_back(pCaloHitI);
                 }
             } else {
-	      std::cout << "BH -- skipping hit association due to inter tpc volume check in Simple Cluster Creation Algorithm" << std::endl;
+	      //std::cout << "BH -- skipping hit association due to inter tpc volume check in Simple Cluster Creation Algorithm" << std::endl;
 	    }
         }
     }

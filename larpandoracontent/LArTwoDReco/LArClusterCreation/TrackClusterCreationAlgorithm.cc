@@ -171,7 +171,7 @@ StatusCode TrackClusterCreationAlgorithm::AddFilteredCaloHits(
 
                     if (m_checkInterTPCVolumeAssociations && !(pLArCaloHitI->GetLArTPCVolumeId() == pLArCaloHitJ->GetLArTPCVolumeId() &&
 							       pLArCaloHitI->GetSubVolumeId() == pLArCaloHitJ->GetSubVolumeId())) {
-		        std::cout << "BH caught hits to skip due to volume checking during 'carryOn'" << std::endl;
+		      //std::cout << "BH caught hits to skip due to volume checking during 'carryOn'" << std::endl;
                         continue;
 		    }
 
@@ -250,7 +250,7 @@ void TrackClusterCreationAlgorithm::MakePrimaryAssociations(const OrderedCaloHit
                     {
                         this->CreatePrimaryAssociation(pCaloHitI, pCaloHitJ, forwardHitAssociationMap, backwardHitAssociationMap);
                     } else {
-		      std::cout << "BH caught hits to skip due to volume checking during MakePrimaryAssociations" << std::endl;
+		      //std::cout << "BH caught hits to skip due to volume checking during MakePrimaryAssociations" << std::endl;
 		    }
                 }
             }
@@ -289,7 +289,7 @@ void TrackClusterCreationAlgorithm::MakeSecondaryAssociations(const OrderedCaloH
                 {
                     this->CreateSecondaryAssociation(pCaloHit, pForwardHit, forwardHitAssociationMap, backwardHitAssociationMap);
                 } else {
-		  std::cout << "BH caught hits to skip due to volume checking during MakeSecondaryAssociations" << std::endl;
+		  //std::cout << "BH caught hits to skip due to volume checking during MakeSecondaryAssociations" << std::endl;
 		}
             }
 
@@ -309,7 +309,7 @@ void TrackClusterCreationAlgorithm::MakeSecondaryAssociations(const OrderedCaloH
                 {
                     this->CreateSecondaryAssociation(pBackwardHit, pCaloHit, forwardHitAssociationMap, backwardHitAssociationMap);
                 } else {
-		  std::cout << "BH caught hits to skip due to volume checking during MakeSecondaryAssociations" << std::endl;
+		  //std::cout << "BH caught hits to skip due to volume checking during MakeSecondaryAssociations" << std::endl;
 		}
             }
         }
@@ -521,7 +521,7 @@ const CaloHit *TrackClusterCreationAlgorithm::GetJoinHit(
         }
         else
         {
-	    std::cout << "BH caught hits to skip due to volume checking during GetJoinHit" << std::endl;
+	  //std::cout << "BH caught hits to skip due to volume checking during GetJoinHit" << std::endl;
             return nullptr;
         }
     }
@@ -543,7 +543,7 @@ const CaloHit *TrackClusterCreationAlgorithm::GetJoinHit(
         }
         else
         {
-	    std::cout << "BH caught hits to skip due to volume checking during GetJoinHit" << std::endl;
+	  //std::cout << "BH caught hits to skip due to volume checking during GetJoinHit" << std::endl;
             return nullptr;
         }
     }
