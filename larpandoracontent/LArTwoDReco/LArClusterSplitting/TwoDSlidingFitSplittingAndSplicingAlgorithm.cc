@@ -25,7 +25,8 @@ TwoDSlidingFitSplittingAndSplicingAlgorithm::TwoDSlidingFitSplittingAndSplicingA
     m_longHalfWindowLayers(20),
     m_minClusterLength(7.5f),
     m_vetoDisplacement(1.5f),
-    m_runCosmicMode(false)
+    m_runCosmicMode(false),
+    m_checkInterTPCVolumeAssociations(false)
 {
 }
 
@@ -152,7 +153,7 @@ void TwoDSlidingFitSplittingAndSplicingAlgorithm::BuildClusterExtensionList(cons
             const unsigned int tpcVolumeJ{pLArCaloHitJ->GetLArTPCVolumeId()};
             const unsigned int daughterVolumeJ{pLArCaloHitJ->GetDaughterVolumeId()};
 
-            if (tpcVolumeI != tpcVolumeJ || daughterVolumeI != daughterVolumeJ)
+            if (m_checkInterTPCVolumeAssociations && (tpcVolumeI != tpcVolumeJ || daughterVolumeI != daughterVolumeJ))
                 continue;
 
             // Get the branch and replacement sliding fits for this pair of clusters
@@ -455,6 +456,9 @@ StatusCode TwoDSlidingFitSplittingAndSplicingAlgorithm::ReadSettings(const TiXml
         STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "VetoDisplacement", m_vetoDisplacement));
 
     PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "CosmicMode", m_runCosmicMode));
+
+    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=,
+        XmlHelper::ReadValue(xmlHandle, "CheckInterTPCVolumeAssociations", m_checkInterTPCVolumeAssociations));
 
     return STATUS_CODE_SUCCESS;
 }
