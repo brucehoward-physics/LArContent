@@ -40,6 +40,11 @@ StatusCode SlicingAlgorithm::Run()
     const PfoList *pPfoList(nullptr);
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::CreateTemporaryListAndSetCurrent(*this, pPfoList, pfoListName));
 
+    // If there is a m_inputCaloHitListCustom set then let's get that hit and add it to the calo hit list of every slice...
+    const CaloHitList *pCaloHitListCustom(nullptr);
+    if ( m_inputCaloHitListNameCustom.size() > 0 )
+        PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::GetList(*this, m_inputCaloHitListNameCustom, pCaloHitListCustom));
+
     for (const Slice &slice : sliceList)
     {
         const Cluster *pClusterU(nullptr), *pClusterV(nullptr), *pClusterW(nullptr);
@@ -57,6 +62,15 @@ StatusCode SlicingAlgorithm::Run()
         if (!pClusterU && !pClusterV && !pClusterW)
             throw StatusCodeException(STATUS_CODE_FAILURE);
 
+        // If custom hit list then use it
+        const Cluster *pClusterCustom(nullptr);
+        PandoraContentApi::Cluster::Parameters clusterParametersCustom;
+        if ( pCaloHitListCustom ) {
+            clusterParametersCustom.m_caloHitList = *pCaloHitListCustom;
+            if (!clusterParametersCustom.m_caloHitList.empty())
+                PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::Cluster::Create(*this, clusterParametersCustom, pClusterCustom));
+        }
+
         const Pfo *pSlicePfo(nullptr);
         PandoraContentApi::ParticleFlowObject::Parameters pfoParameters;
         if (pClusterU)
@@ -65,6 +79,8 @@ StatusCode SlicingAlgorithm::Run()
             pfoParameters.m_clusterList.push_back(pClusterV);
         if (pClusterW)
             pfoParameters.m_clusterList.push_back(pClusterW);
+        if (pClusterCustom)
+            pfoParameters.m_clusterList.push_back(pClusterCustom);
         pfoParameters.m_charge = 0;
         pfoParameters.m_energy = 0.f;
         pfoParameters.m_mass = 0.f;
@@ -109,6 +125,9 @@ StatusCode SlicingAlgorithm::ReadSettings(const TiXmlHandle xmlHandle)
     m_caloHitListNames[TPC_VIEW_U] = caloHitListNameU;
     m_caloHitListNames[TPC_VIEW_V] = caloHitListNameV;
     m_caloHitListNames[TPC_VIEW_W] = caloHitListNameW;
+
+    // Add a custom hit for vertex to every slice?
+    PANDORA_RETURN_RESULT_IF_AND_IF(STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "InputCaloHitListNameCustom", m_inputCaloHitListNameCustom));
 
     std::string clusterListNameU, clusterListNameV, clusterListNameW;
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, XmlHelper::ReadValue(xmlHandle, "InputClusterListNameU", clusterListNameU));

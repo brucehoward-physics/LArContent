@@ -51,6 +51,8 @@ private:
     std::string m_slicingListDeletionAlgorithm; ///< The name of the slicing list deletion algorithm
 
     HitTypeToNameMap m_caloHitListNames; ///< The hit type to calo hit list name map
+    std::string m_inputCaloHitListNameCustom;   ///< The input calo hit list name for HIT_CUSTOM hits (LArPandoraInput allows one to input a custom external vertex as HIT_CUSTOM)
+
     HitTypeToNameMap m_clusterListNames; ///< The hit type to cluster list name map
 
     std::string m_sliceClusterListName; ///< The name of the output slice cluster list
