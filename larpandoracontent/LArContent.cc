@@ -209,6 +209,7 @@
 #include "larpandoracontent/LArVertex/HitAngleVertexSelectionAlgorithm.h"
 #include "larpandoracontent/LArVertex/MvaVertexSelectionAlgorithm.h"
 #include "larpandoracontent/LArVertex/VertexRefinementAlgorithm.h"
+#include "larpandoracontent/LArVertex/VertexCreationFromExternal.h"
 
 #include "larpandoracontent/LArContent.h"
 
@@ -321,7 +322,8 @@
     d("LArHitAngleVertexSelection",             HitAngleVertexSelectionAlgorithm)                                               \
     d("LArBdtVertexSelection",                  BdtVertexSelectionAlgorithm)                                                    \
     d("LArSvmVertexSelection",                  SvmVertexSelectionAlgorithm)                                                    \
-    d("LArVertexRefinement",                    VertexRefinementAlgorithm)
+    d("LArVertexRefinement",                    VertexRefinementAlgorithm)                                                      \
+    d("LArVertexCreationFromExternal",          VertexCreationFromExternal)
 
 #define LAR_ALGORITHM_TOOL_LIST(d)                                                                                              \
     d("LArBdtBeamParticleId",                   BdtBeamParticleIdTool)                                                          \

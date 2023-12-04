@@ -76,6 +76,7 @@ private:
     std::string m_outputCaloHitListNameU;        ///< The output calo hit list name for TPC_VIEW_U hits
     std::string m_outputCaloHitListNameV;        ///< The output calo hit list name for TPC_VIEW_V hits
     std::string m_outputCaloHitListNameW;        ///< The output calo hit list name for TPC_VIEW_W hits
+    std::string m_outputCaloHitListNameCustom;   ///< The output calo hit list name for HIT_CUSTOM hits (LArPandoraInput allows one to input a custom external vertex as HIT_CUSTOM)
     std::string m_filteredCaloHitListName;       ///< The output calo hit list name for all U, V and W hits
     std::string m_currentCaloHitListReplacement; ///< The name of the calo hit list to replace the current list (optional)
 };

@@ -88,6 +88,7 @@ void PreProcessingAlgorithm::ProcessCaloHits()
         throw StatusCodeException(STATUS_CODE_OUT_OF_RANGE);
 
     CaloHitList selectedCaloHitListU, selectedCaloHitListV, selectedCaloHitListW;
+    CaloHitList selectedCaloHitListCustom;
 
     for (const CaloHit *const pCaloHit : *pCaloHitList)
     {
@@ -98,6 +99,15 @@ void PreProcessingAlgorithm::ProcessCaloHits()
 
         if (m_onlyAvailableCaloHits && !PandoraContentApi::IsAvailable(*this, pCaloHit))
             continue;
+
+        // If hit is of type HIT_CUSTOM save it to the custom hit list
+        if (HIT_CUSTOM == pCaloHit->GetHitType())
+        {
+            std::cout << "!!!! FOUND A CUSTOM HIT" << std::endl;
+
+            selectedCaloHitListCustom.push_back(pCaloHit);
+            continue;
+        }
 
         if (pCaloHit->GetMipEquivalentEnergy() < m_mipEquivalentCut)
             continue;
@@ -144,6 +154,8 @@ void PreProcessingAlgorithm::ProcessCaloHits()
     filteredInputList.insert(filteredInputList.end(), filteredCaloHitListU.begin(), filteredCaloHitListU.end());
     filteredInputList.insert(filteredInputList.end(), filteredCaloHitListV.begin(), filteredCaloHitListV.end());
     filteredInputList.insert(filteredInputList.end(), filteredCaloHitListW.begin(), filteredCaloHitListW.end());
+    //if ( !selectedCaloHitListCustom.empty() )
+    //    filteredInputList.insert(filteredInputList.end(), selectedCaloHitListCustom.begin(), selectedCaloHitListCustom.end());
 
     if (!filteredInputList.empty() && !m_filteredCaloHitListName.empty())
         PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList(*this, filteredInputList, m_filteredCaloHitListName));
@@ -156,6 +168,13 @@ void PreProcessingAlgorithm::ProcessCaloHits()
 
     if (!filteredCaloHitListW.empty() && !m_outputCaloHitListNameW.empty())
         PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList(*this, filteredCaloHitListW, m_outputCaloHitListNameW));
+
+    if (!selectedCaloHitListCustom.empty() && !m_outputCaloHitListNameCustom.empty()) {
+        std::cout << "!!!! ------ SAVING CUSTOM HIT to " << m_outputCaloHitListNameCustom << std::endl;
+        PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList(*this, selectedCaloHitListCustom, m_outputCaloHitListNameCustom));
+    }
+    else if ( !selectedCaloHitListCustom.empty() ) std::cout << "!!!! ------ **NOT** SAVING CUSTOM HIT" << std::endl;
+    else std::cout << "!!!! ------ **NO** custom hits" << std::endl;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -266,6 +285,9 @@ StatusCode PreProcessingAlgorithm::ReadSettings(const TiXmlHandle xmlHandle)
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, XmlHelper::ReadValue(xmlHandle, "OutputCaloHitListNameV", m_outputCaloHitListNameV));
 
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, XmlHelper::ReadValue(xmlHandle, "OutputCaloHitListNameW", m_outputCaloHitListNameW));
+
+    PANDORA_RETURN_RESULT_IF_AND_IF(
+        STATUS_CODE_SUCCESS, STATUS_CODE_NOT_FOUND, !=, XmlHelper::ReadValue(xmlHandle, "OutputCaloHitListNameCustom", m_outputCaloHitListNameCustom));
 
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, XmlHelper::ReadValue(xmlHandle, "FilteredCaloHitListName", m_filteredCaloHitListName));
 
