@@ -467,6 +467,8 @@ StatusCode MasterAlgorithm::RunSlicing(const VolumeIdToHitListMap &volumeIdToHit
             if ((TPC_VIEW_U != hitType) && (TPC_VIEW_V != hitType) && (TPC_VIEW_W != hitType) && (HIT_CUSTOM != hitType))
                 continue;
 
+            if ( HIT_CUSTOM == hitType ) std::cout << "!!!! --BH-- Found custom hit in RunSlicing Algorithm..." << std::endl;
+
             if (m_shouldRunSlicing)
             {
                 PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, this->Copy(m_pSlicingWorkerInstance, pCaloHit));

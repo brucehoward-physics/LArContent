@@ -169,12 +169,16 @@ void PreProcessingAlgorithm::ProcessCaloHits()
     if (!filteredCaloHitListW.empty() && !m_outputCaloHitListNameW.empty())
         PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList(*this, filteredCaloHitListW, m_outputCaloHitListNameW));
 
+    std::cout << "!!!! ------ BEGINNING CONSIDERATION OF CUSTOM HITS" << std::endl;
+    if ( !m_outputCaloHitListNameCustom.empty() ) std::cout << "!!!! ------ There is a custom calo hit list set up: " << m_outputCaloHitListNameCustom << std::endl;
+
     if (!selectedCaloHitListCustom.empty() && !m_outputCaloHitListNameCustom.empty()) {
         std::cout << "!!!! ------ SAVING CUSTOM HIT to " << m_outputCaloHitListNameCustom << std::endl;
         PANDORA_THROW_RESULT_IF(STATUS_CODE_SUCCESS, !=, PandoraContentApi::SaveList(*this, selectedCaloHitListCustom, m_outputCaloHitListNameCustom));
     }
     else if ( !selectedCaloHitListCustom.empty() ) std::cout << "!!!! ------ **NOT** SAVING CUSTOM HIT" << std::endl;
     else std::cout << "!!!! ------ **NO** custom hits" << std::endl;
+    std::cout << "!!!! ------ ENDING CONSIDERATION OF CUSTOM HITS" << std::endl;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
