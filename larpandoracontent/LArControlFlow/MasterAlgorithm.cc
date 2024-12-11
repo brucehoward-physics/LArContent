@@ -152,6 +152,8 @@ void MasterAlgorithm::StitchPfos(
 
 StatusCode MasterAlgorithm::Run()
 {
+    std::cout << "TIMER_TIMER_TIMER " << std::time(nullptr) << " (MasterAlg) Running MasterAlgorithm" << std::endl;
+
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, this->Reset());
 
     if (!m_workerInstancesInitialized)
@@ -166,6 +168,7 @@ StatusCode MasterAlgorithm::Run()
 
     if (m_shouldRunAllHitsCosmicReco)
     {
+        std::cout << "TIMER_TIMER_TIMER " << std::time(nullptr) << " (MasterAlg) Running All Hits Cosmic Reco" << std::endl;
         PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, this->RunCosmicRayReconstruction(volumeIdToHitListMap));
 
         PfoToLArTPCMap pfoToLArTPCMap;
@@ -177,21 +180,25 @@ StatusCode MasterAlgorithm::Run()
 
     if (m_shouldRunCosmicHitRemoval)
     {
+        std::cout << "TIMER_TIMER_TIMER " << std::time(nullptr) << " (MasterAlg) Running Cosmic Hit Removal" << std::endl;
         PfoList clearCosmicRayPfos, ambiguousPfos;
         PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, this->TagCosmicRayPfos(stitchedPfosToX0Map, clearCosmicRayPfos, ambiguousPfos));
         PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, this->RunCosmicRayHitRemoval(ambiguousPfos));
     }
 
+    std::cout << "TIMER_TIMER_TIMER " << std::time(nullptr) << " (MasterAlg) Running Slicing" << std::endl;
     SliceVector sliceVector;
     PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, this->RunSlicing(volumeIdToHitListMap, sliceVector));
 
     if (m_shouldRunNeutrinoRecoOption || m_shouldRunCosmicRecoOption)
     {
+        std::cout << "TIMER_TIMER_TIMER " << std::time(nullptr) << " (MasterAlg) Running Neutrino and/or Cosmic Reco Options" << std::endl;
         SliceHypotheses nuSliceHypotheses, crSliceHypotheses;
         PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, this->RunSliceReconstruction(sliceVector, nuSliceHypotheses, crSliceHypotheses));
         PANDORA_RETURN_RESULT_IF(STATUS_CODE_SUCCESS, !=, this->SelectBestSliceHypotheses(nuSliceHypotheses, crSliceHypotheses));
     }
 
+    std::cout << "TIMER_TIMER_TIMER " << std::time(nullptr) << " (MasterAlg) Done with MasterAlgorithm::Run()" << std::endl;
     return STATUS_CODE_SUCCESS;
 }
 
