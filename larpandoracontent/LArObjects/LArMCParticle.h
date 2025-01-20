@@ -84,7 +84,7 @@ class LArMCParticleParameters : public object_creation::MCParticle::Parameters
 public:
     pandora::InputInt m_nuanceCode; ///< The nuance code
     pandora::InputInt m_process;    ///< The process creating the particle
-    float m_length;                 ///< The length the MC particle traveled
+    pandora::InputFloat m_length;   ///< The length the MC particle traveled
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------
