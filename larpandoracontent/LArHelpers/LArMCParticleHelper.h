@@ -116,6 +116,11 @@ public:
     static unsigned int GetNuanceCode(const pandora::MCParticle *const pMCParticle);
 
     /**
+     *  @brief  Get the true trajectory length an MCParticle
+     */
+    static float GetLength(const pandora::MCParticle *const pMCParticle);
+
+    /**
      *  @brief  Whether a mc particle is a neutrino or antineutrino
      *
      *  @param  pMCParticle the input mc particle

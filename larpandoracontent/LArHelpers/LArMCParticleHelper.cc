@@ -128,6 +128,18 @@ unsigned int LArMCParticleHelper::GetNuanceCode(const MCParticle *const pMCParti
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+float LArMCParticleHelper::GetLength(const MCParticle *const pMCParticle)
+{
+    const LArMCParticle *const pLArMCParticle(dynamic_cast<const LArMCParticle *>(pMCParticle));
+    if (pLArMCParticle)
+        return pLArMCParticle->GetLength();
+
+    std::cout << "LArMCParticleHelper::GetNuanceCode - Error: Can't cast to LArMCParticle" << std::endl;
+    throw StatusCodeException(STATUS_CODE_NOT_ALLOWED);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
 bool LArMCParticleHelper::IsNeutrino(const MCParticle *const pMCParticle)
 {
     const int nuance(LArMCParticleHelper::GetNuanceCode(pMCParticle));
