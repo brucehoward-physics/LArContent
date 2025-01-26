@@ -21,6 +21,8 @@
 namespace lar_content
 {
 
+typedef pandora::PandoraInputType<double> InputDouble;
+
 // Enumeration maps onto G4 process IDs from QGSP_BERT and EM standard physics lists, plus an ID for the incident neutrino
 enum MCProcess
 {
@@ -85,6 +87,9 @@ public:
     pandora::InputInt m_nuanceCode; ///< The nuance code
     pandora::InputInt m_process;    ///< The process creating the particle
     pandora::InputFloat m_length;   ///< The length the MC particle traveled
+    InputDouble m_tStart;           ///< The time start of MC Particle
+    InputDouble m_tEnd;             ///< The time end of MC Particle
+    InputDouble m_spillT;           ///< The (event) spill time
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -130,10 +135,34 @@ public:
      */
     float GetLength() const;
 
+    /**
+     *  @brief  Get the MC Particle start time
+     *
+     *  @return the time
+     */
+    double GetTStart() const;
+
+    /**
+     *  @brief  Get the MC Particle end time
+     *
+     *  @return the time
+     */
+    double GetTEnd() const;
+
+    /**
+     *  @brief  Get the event/spill time
+     *
+     *  @return the time
+     */
+    double GetSpillT() const;
+
 private:
     int m_nuanceCode; ///< The nuance code
     int m_process;    ///< The process that created the particle
     float m_length;   ///< The length traveled by MC particle
+    double m_tStart;   ///< The start time of the MC particle
+    double m_tEnd;     ///< The end time of the MC particle
+    double m_spillT;   ///< The event/spill time
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -193,7 +222,10 @@ inline LArMCParticle::LArMCParticle(const LArMCParticleParameters &parameters) :
     object_creation::MCParticle::Object(parameters),
     m_nuanceCode(parameters.m_nuanceCode.Get()),
     m_process(parameters.m_process.Get()),
-    m_length(parameters.m_length.Get())
+    m_length(parameters.m_length.Get()),
+    m_tStart(parameters.m_tStart.Get()),
+    m_tEnd(parameters.m_tEnd.Get()),
+    m_spillT(parameters.m_spillT.Get())
 {
 }
 
@@ -213,11 +245,35 @@ inline float LArMCParticle::GetLength() const
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+inline double LArMCParticle::GetTStart() const
+{
+    return m_tStart;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+inline double LArMCParticle::GetTEnd() const
+{
+    return m_tEnd;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+inline double LArMCParticle::GetSpillT() const
+{
+    return m_spillT;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
 inline void LArMCParticle::FillParameters(LArMCParticleParameters &parameters) const
 {
     parameters.m_nuanceCode = this->GetNuanceCode();
     parameters.m_process = this->GetProcess();
     parameters.m_length = this->GetLength();
+    parameters.m_tStart = this->GetTStart();
+    parameters.m_tEnd = this->GetTEnd();
+    parameters.m_spillT = this->GetSpillT();
     parameters.m_energy = this->GetEnergy();
     parameters.m_momentum = this->GetMomentum();
     parameters.m_vertex = this->GetVertex();
@@ -264,18 +320,24 @@ inline pandora::StatusCode LArMCParticleFactory::Create(const Parameters &parame
 
 inline pandora::StatusCode LArMCParticleFactory::Read(Parameters &parameters, pandora::FileReader &fileReader) const
 {
-    // BH -> not entirely sure if this needs to have ability to read length too? Added for now.
+    // BH -> not entirely sure if this needs to have ability to read length/times too? Added for now.
 
     // ATTN: To receive this call-back must have already set file reader mc particle factory to this factory
     int nuanceCode(0);
     int process(0);
     float length(0.);
+    double tStart(0.);
+    double tEnd(0.);
+    double spillT(0.);
 
     if (pandora::BINARY == fileReader.GetFileType())
     {
         pandora::BinaryFileReader &binaryFileReader(dynamic_cast<pandora::BinaryFileReader &>(fileReader));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileReader.ReadVariable(nuanceCode));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileReader.ReadVariable(length));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileReader.ReadVariable(tStart));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileReader.ReadVariable(tEnd));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileReader.ReadVariable(spillT));
 
         if (m_version > 1)
             PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileReader.ReadVariable(process));
@@ -285,6 +347,9 @@ inline pandora::StatusCode LArMCParticleFactory::Read(Parameters &parameters, pa
         pandora::XmlFileReader &xmlFileReader(dynamic_cast<pandora::XmlFileReader &>(fileReader));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable("NuanceCode", nuanceCode));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable("Length", length));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable("TStart", tStart));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable("TEnd", tEnd));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable("SpillT", spillT));
 
         if (m_version > 1)
             PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable("Process", process));
@@ -298,6 +363,9 @@ inline pandora::StatusCode LArMCParticleFactory::Read(Parameters &parameters, pa
     larMCParticleParameters.m_nuanceCode = nuanceCode;
     larMCParticleParameters.m_process = process;
     larMCParticleParameters.m_length = length;
+    larMCParticleParameters.m_tStart = tStart;
+    larMCParticleParameters.m_tEnd = tEnd;
+    larMCParticleParameters.m_spillT = spillT;
 
     return pandora::STATUS_CODE_SUCCESS;
 }
@@ -317,6 +385,9 @@ inline pandora::StatusCode LArMCParticleFactory::Write(const Object *const pObje
         pandora::BinaryFileWriter &binaryFileWriter(dynamic_cast<pandora::BinaryFileWriter &>(fileWriter));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileWriter.WriteVariable(pLArMCParticle->GetNuanceCode()));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileWriter.WriteVariable(pLArMCParticle->GetLength()));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileWriter.WriteVariable(pLArMCParticle->GetTStart()));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileWriter.WriteVariable(pLArMCParticle->GetTEnd()));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileWriter.WriteVariable(pLArMCParticle->GetSpillT()));
 
         if (m_version > 1)
             PANDORA_RETURN_RESULT_IF(
@@ -327,6 +398,9 @@ inline pandora::StatusCode LArMCParticleFactory::Write(const Object *const pObje
         pandora::XmlFileWriter &xmlFileWriter(dynamic_cast<pandora::XmlFileWriter &>(fileWriter));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileWriter.WriteVariable("NuanceCode", pLArMCParticle->GetNuanceCode()));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileWriter.WriteVariable("Length", pLArMCParticle->GetLength()));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileWriter.WriteVariable("TStart", pLArMCParticle->GetTStart()));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileWriter.WriteVariable("TEnd", pLArMCParticle->GetTEnd()));
+        PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileWriter.WriteVariable("SpillT", pLArMCParticle->GetSpillT()));
 
         if (m_version > 1)
             PANDORA_RETURN_RESULT_IF(

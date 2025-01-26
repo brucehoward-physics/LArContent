@@ -121,6 +121,21 @@ public:
     static float GetLength(const pandora::MCParticle *const pMCParticle);
 
     /**
+     *  @brief  Get the true start time of an MCParticle
+     */
+    static float GetTStart(const pandora::MCParticle *const pMCParticle);
+
+    /**
+     *  @brief  Get the true end time of an MCParticle
+     */
+    static float GetTEnd(const pandora::MCParticle *const pMCParticle);
+
+    /**
+     *  @brief  Get the true event/spill time
+     */
+    static float GetSpillT(const pandora::MCParticle *const pMCParticle);
+
+    /**
      *  @brief  Whether a mc particle is a neutrino or antineutrino
      *
      *  @param  pMCParticle the input mc particle
