@@ -50,7 +50,7 @@ const CaloHit *LArTrackState::GetCaloHit() const
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-const float LArTrackState::GetEnergy() const
+float LArTrackState::GetEnergy() const
 {
     return m_energy();
 }
