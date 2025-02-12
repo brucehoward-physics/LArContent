@@ -64,7 +64,7 @@ public:
     /**
      *  @brief  Return charge/energy for this track state
      */
-    const float GetEnergy() const;
+    float GetEnergy() const;
 
 private:
     const pandora::CaloHit *m_pCaloHit;
