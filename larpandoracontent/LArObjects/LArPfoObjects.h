@@ -68,7 +68,7 @@ public:
 
 private:
     const pandora::CaloHit *m_pCaloHit;
-    const float m_energy;
+    float m_energy;
 };
 
 typedef std::vector<LArTrackState> LArTrackStateVector;
