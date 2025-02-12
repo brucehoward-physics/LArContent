@@ -43,7 +43,7 @@ const CaloHit *LArObjectHelper::TypeAdaptor::GetCaloHit(const CaloHit *const &pC
 //------------------------------------------------------------------------------------------------------------------------------------------
 
 template <>
-float LArObjectHelper::TypeAdaptor::GetInputEnergy(const CartesianVector &t)
+float LArObjectHelper::TypeAdaptor::GetInputEnergy(const CartesianVector &)
 {
     return 0.;
 }
