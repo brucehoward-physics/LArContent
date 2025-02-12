@@ -52,7 +52,7 @@ const CaloHit *LArTrackState::GetCaloHit() const
 
 float LArTrackState::GetEnergy() const
 {
-    return m_energy();
+    return m_energy;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
