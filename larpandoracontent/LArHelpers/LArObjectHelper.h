@@ -44,6 +44,16 @@ public:
          */
         template <typename T>
         static const pandora::CaloHit *GetCaloHit(const T &t);
+
+        /**
+         *  @brief  Get the associated charge/energy
+         *
+         *  @param  t the input object
+         *
+         *  @return the associated InputEnergy (typically a charge or energy of the CaloHit, if that's the type, or 0. otherwise)
+         */
+        template <typename T>
+        static float GetInputEnergy(const T &t);
     };
 };
 

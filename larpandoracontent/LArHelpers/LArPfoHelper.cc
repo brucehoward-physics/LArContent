@@ -735,7 +735,9 @@ void LArPfoHelper::SlidingFitTrajectoryImpl(const T *const pT, const CartesianVe
                 const float projection(seedDirection.GetDotProduct(position - seedPosition));
 
                 trackTrajectory.push_back(LArTrackTrajectoryPoint(projection * scaleFactor,
-                    LArTrackState(position, direction * scaleFactor, LArObjectHelper::TypeAdaptor::GetCaloHit(nextPoint)), index));
+                    LArTrackState(position, direction * scaleFactor, LArObjectHelper::TypeAdaptor::GetCaloHit(nextPoint),
+                                  LArObjectHelper::TypeAdaptor::GetInputEnergy(nextPoint)),
+                    index));
             }
             catch (const StatusCodeException &statusCodeException1)
             {
