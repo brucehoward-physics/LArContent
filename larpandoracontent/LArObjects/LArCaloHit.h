@@ -74,7 +74,7 @@ public:
      *
      *  @return the match PDG
      */
-    float GetMCMatchPDG() const;
+    int GetMCMatchPDG() const;
 
     /**
      *  @brief  Fill the parameters associated with this calo hit
@@ -198,14 +198,14 @@ inline unsigned int LArCaloHit::GetDaughterVolumeId() const
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline unsigned int LArCaloHit::GetMCMatchWeight() const
+inline float LArCaloHit::GetMCMatchWeight() const
 {
     return m_mcMatchWeight;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
-inline unsigned int LArCaloHit::GetMCMatchPDG() const
+inline int LArCaloHit::GetMCMatchPDG() const
 {
     return m_mcMatchPDG;
 }
@@ -328,8 +328,8 @@ inline pandora::StatusCode LArCaloHitFactory::Read(Parameters &parameters, pando
         if (m_version > 1) {
             PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable("DaughterVolumeId", daughterVolumeId));
             // TODO: Fix this to have the right version number for where these parameters get added, if they do get added.
-            PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable(mcMatchWeight));
-            PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable(mcMatchPDG));
+            PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable("MCMatchWeight", mcMatchWeight));
+            PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable("MCMatchPDG", mcMatchPDG));
         }
     }
     else
