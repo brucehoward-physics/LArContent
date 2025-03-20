@@ -40,4 +40,18 @@ const CaloHit *LArObjectHelper::TypeAdaptor::GetCaloHit(const CaloHit *const &pC
     return pCaloHit2D;
 }
 
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+template <>
+float LArObjectHelper::TypeAdaptor::GetInputEnergy(const CartesianVector &)
+{
+    return 0.;
+}
+
+template <>
+float LArObjectHelper::TypeAdaptor::GetInputEnergy(const CaloHit *const &pT)
+{
+    return pT->GetInputEnergy();
+}
+
 } // namespace lar_content
