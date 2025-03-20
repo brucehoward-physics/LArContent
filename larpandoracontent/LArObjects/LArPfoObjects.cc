@@ -15,9 +15,10 @@ using namespace pandora;
 namespace lar_content
 {
 
-LArTrackState::LArTrackState(const CartesianVector &position, const CartesianVector &direction, const CaloHit *const pCaloHit) :
+LArTrackState::LArTrackState(const CartesianVector &position, const CartesianVector &direction, const CaloHit *const pCaloHit, const float inputEnergy ) :
     TrackState(position, direction),
-    m_pCaloHit(pCaloHit)
+    m_pCaloHit(pCaloHit),
+    m_energy(inputEnergy)
 {
 }
 
@@ -25,7 +26,8 @@ LArTrackState::LArTrackState(const CartesianVector &position, const CartesianVec
 
 LArTrackState::LArTrackState(const CartesianVector &position, const CartesianVector &direction) :
     TrackState(position, direction),
-    m_pCaloHit(nullptr)
+    m_pCaloHit(nullptr),
+    m_energy(0.)
 {
 }
 
@@ -44,6 +46,13 @@ const CaloHit *LArTrackState::GetCaloHit() const
         return m_pCaloHit;
 
     throw StatusCodeException(STATUS_CODE_NOT_INITIALIZED);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+float LArTrackState::GetEnergy() const
+{
+    return m_energy;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
