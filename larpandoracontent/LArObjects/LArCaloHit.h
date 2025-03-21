@@ -27,10 +27,8 @@ namespace lar_content
 class LArCaloHitParameters : public object_creation::CaloHit::Parameters
 {
 public:
-    pandora::InputUInt  m_larTPCVolumeId;   ///< The lar tpc volume id
-    pandora::InputUInt  m_daughterVolumeId; ///< The daughter volume id
-    pandora::InputFloat m_mcMatchWeight;    ///< The match weight of best-matched MC particle, if used
-    pandora::InputInt   m_mcMatchPDG;       ///< The PDG of the best-matched MC particle, if used
+    pandora::InputUInt m_larTPCVolumeId;   ///< The lar tpc volume id
+    pandora::InputUInt m_daughterVolumeId; ///< The daughter volume id
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -61,20 +59,6 @@ public:
      *  @return the daughter volume id
      */
     unsigned int GetDaughterVolumeId() const;
-
-    /**
-     *  @brief  Get the MC match weight for best match to hit
-     *
-     *  @return the match weight
-     */
-    float GetMCMatchWeight() const;
-
-    /**
-     *  @brief  Get the MC match PDG for best match to hit
-     *
-     *  @return the match PDG
-     */
-    float GetMCMatchPDG() const;
 
     /**
      *  @brief  Fill the parameters associated with this calo hit
@@ -114,8 +98,6 @@ public:
 private:
     unsigned int m_larTPCVolumeId;   ///< The lar tpc volume id
     unsigned int m_daughterVolumeId; ///< The daughter volume id
-    float        m_mcMatchWeight;    ///< The MC match weight
-    int          m_mcMatchPDG;       ///< The MC match PDG code
     pandora::InputFloat m_pTrack;    ///< The probability that the hit is track-like
     pandora::InputFloat m_pShower;   ///< The probability that the hit is shower-like
 };
@@ -177,8 +159,6 @@ inline LArCaloHit::LArCaloHit(const LArCaloHitParameters &parameters) :
     object_creation::CaloHit::Object(parameters),
     m_larTPCVolumeId(parameters.m_larTPCVolumeId.Get()),
     m_daughterVolumeId(parameters.m_daughterVolumeId.IsInitialized() ? parameters.m_daughterVolumeId.Get() : 0)
-    m_mcMatchWeight(parameters.m_mcMatchWeight.IsInitialized() ? parameters.m_mcMatchWeight.Get() : 0)
-    m_mcMatchPDG(parameters.m_mcMatchPDG.IsInitialized() ? parameters.m_mcMatchPDG.Get() : 0)
 {
 }
 
@@ -194,20 +174,6 @@ inline unsigned int LArCaloHit::GetLArTPCVolumeId() const
 inline unsigned int LArCaloHit::GetDaughterVolumeId() const
 {
     return m_daughterVolumeId;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------
-
-inline unsigned int LArCaloHit::GetMCMatchWeight() const
-{
-    return m_mcMatchWeight;
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------
-
-inline unsigned int LArCaloHit::GetMCMatchPDG() const
-{
-    return m_mcMatchPDG;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -237,8 +203,6 @@ inline void LArCaloHit::FillParameters(LArCaloHitParameters &parameters) const
     parameters.m_pParentAddress = static_cast<const void *>(this);
     parameters.m_larTPCVolumeId = this->GetLArTPCVolumeId();
     parameters.m_daughterVolumeId = this->GetDaughterVolumeId();
-    parameters.m_mcMatchWeight = this->GetMCMatchWeight();
-    parameters.m_mcMatchPDG = this->GetMCMatchPDG();
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -307,30 +271,20 @@ inline pandora::StatusCode LArCaloHitFactory::Read(Parameters &parameters, pando
     // ATTN: To receive this call-back must have already set file reader mc particle factory to this factory
     unsigned int larTPCVolumeId(std::numeric_limits<unsigned int>::max());
     unsigned int daughterVolumeId(0);
-    float        mcMatchWeight(0);
-    int          mcMatchPDG(0);
 
     if (pandora::BINARY == fileReader.GetFileType())
     {
         pandora::BinaryFileReader &binaryFileReader(dynamic_cast<pandora::BinaryFileReader &>(fileReader));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileReader.ReadVariable(larTPCVolumeId));
-        if (m_version > 1) {
+        if (m_version > 1)
             PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileReader.ReadVariable(daughterVolumeId));
-            // TODO: Fix this to have the right version number for where these parameters get added, if they do get added.
-            PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileReader.ReadVariable(mcMatchWeight));
-            PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileReader.ReadVariable(mcMatchPDG));
-        }
     }
     else if (pandora::XML == fileReader.GetFileType())
     {
         pandora::XmlFileReader &xmlFileReader(dynamic_cast<pandora::XmlFileReader &>(fileReader));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable("LArTPCVolumeId", larTPCVolumeId));
-        if (m_version > 1) {
+        if (m_version > 1)
             PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable("DaughterVolumeId", daughterVolumeId));
-            // TODO: Fix this to have the right version number for where these parameters get added, if they do get added.
-            PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable(mcMatchWeight));
-            PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileReader.ReadVariable(mcMatchPDG));
-        }
     }
     else
     {
@@ -340,8 +294,6 @@ inline pandora::StatusCode LArCaloHitFactory::Read(Parameters &parameters, pando
     LArCaloHitParameters &larCaloHitParameters(dynamic_cast<LArCaloHitParameters &>(parameters));
     larCaloHitParameters.m_larTPCVolumeId = larTPCVolumeId;
     larCaloHitParameters.m_daughterVolumeId = daughterVolumeId;
-    larCaloHitParameters.m_mcMatchWeight = mcMatchWeight;
-    larCaloHitParameters.m_mcMatchPDG = mcMatchPDG;
 
     return pandora::STATUS_CODE_SUCCESS;
 }
@@ -360,26 +312,16 @@ inline pandora::StatusCode LArCaloHitFactory::Write(const Object *const pObject,
     {
         pandora::BinaryFileWriter &binaryFileWriter(dynamic_cast<pandora::BinaryFileWriter &>(fileWriter));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileWriter.WriteVariable(pLArCaloHit->GetLArTPCVolumeId()));
-        if (m_version > 1) {
+        if (m_version > 1)
             PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileWriter.WriteVariable(pLArCaloHit->GetDaughterVolumeId()));
-            // TODO: Fix this to have the right version number for where these parameters get added, if they do get added.
-            PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileWriter.WriteVariable(pLArCaloHit->GetMCMatchWeight()));
-            PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, binaryFileWriter.WriteVariable(pLArCaloHit->GetMCMatchPDG()));
-        }
     }
     else if (pandora::XML == fileWriter.GetFileType())
     {
         pandora::XmlFileWriter &xmlFileWriter(dynamic_cast<pandora::XmlFileWriter &>(fileWriter));
         PANDORA_RETURN_RESULT_IF(pandora::STATUS_CODE_SUCCESS, !=, xmlFileWriter.WriteVariable("LArTPCVolumeId", pLArCaloHit->GetLArTPCVolumeId()));
-        if (m_version > 1) {
+        if (m_version > 1)
             PANDORA_RETURN_RESULT_IF(
                 pandora::STATUS_CODE_SUCCESS, !=, xmlFileWriter.WriteVariable("DaughterVolumeId", pLArCaloHit->GetDaughterVolumeId()));
-            // TODO: Fix this to have the right version number for where these parameters get added, if they do get added.
-            PANDORA_RETURN_RESULT_IF(
-                pandora::STATUS_CODE_SUCCESS, !=, xmlFileWriter.WriteVariable("MCMatchWeight", pLArCaloHit->GetMCMatchWeight()));
-            PANDORA_RETURN_RESULT_IF(
-                pandora::STATUS_CODE_SUCCESS, !=, xmlFileWriter.WriteVariable("MCMatchPDG", pLArCaloHit->GetMCMatchPDG()));
-        }
     }
     else
     {
