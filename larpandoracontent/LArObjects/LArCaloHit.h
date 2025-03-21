@@ -176,8 +176,8 @@ private:
 inline LArCaloHit::LArCaloHit(const LArCaloHitParameters &parameters) :
     object_creation::CaloHit::Object(parameters),
     m_larTPCVolumeId(parameters.m_larTPCVolumeId.Get()),
-    m_daughterVolumeId(parameters.m_daughterVolumeId.IsInitialized() ? parameters.m_daughterVolumeId.Get() : 0),
-    m_mcMatchWeight(parameters.m_mcMatchWeight.IsInitialized() ? parameters.m_mcMatchWeight.Get() : 0),
+    m_daughterVolumeId(parameters.m_daughterVolumeId.IsInitialized() ? parameters.m_daughterVolumeId.Get() : 0)
+    m_mcMatchWeight(parameters.m_mcMatchWeight.IsInitialized() ? parameters.m_mcMatchWeight.Get() : 0)
     m_mcMatchPDG(parameters.m_mcMatchPDG.IsInitialized() ? parameters.m_mcMatchPDG.Get() : 0)
 {
 }
