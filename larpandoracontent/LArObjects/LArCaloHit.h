@@ -199,6 +199,8 @@ inline void LArCaloHit::FillParameters(LArCaloHitParameters &parameters) const
     parameters.m_hitRegion = this->GetHitRegion();
     parameters.m_layer = this->GetLayer();
     parameters.m_isInOuterSamplingLayer = this->IsInOuterSamplingLayer();
+    parameters.m_mcMatchWeight = this->GetMCMatchWeight();
+    parameters.m_mcMatchPDG = this->GetMCMatchPDG();
     // ATTN Set the parent address to the original owner of the calo hit
     parameters.m_pParentAddress = static_cast<const void *>(this);
     parameters.m_larTPCVolumeId = this->GetLArTPCVolumeId();
