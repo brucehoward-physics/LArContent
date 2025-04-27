@@ -116,6 +116,11 @@ public:
     static unsigned int GetNuanceCode(const pandora::MCParticle *const pMCParticle);
 
     /**
+     *
+     */
+    static float GetMCParticleTime(const pandora::MCParticle *const pMCParticle);
+
+    /**
      *  @brief  Whether a mc particle is a neutrino or antineutrino
      *
      *  @param  pMCParticle the input mc particle

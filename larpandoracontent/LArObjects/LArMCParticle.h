@@ -84,6 +84,7 @@ class LArMCParticleParameters : public object_creation::MCParticle::Parameters
 public:
     pandora::InputInt m_nuanceCode; ///< The nuance code
     pandora::InputInt m_process;    ///< The process creating the particle
+    pandora::InputFloat m_pTime{0.f};    ///< The particle time (e.g. neutrino interaction time, nominally within spill)
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -108,6 +109,13 @@ public:
      */
     int GetNuanceCode() const;
 
+     /**
+      *  @brief  Get particle time
+      *
+      *  @return the particle time
+     */
+    float GetMCParticleTime() const;
+
     /**
      *  @brief  Fill the parameters associated with this MC particle
      *
@@ -125,6 +133,7 @@ public:
 private:
     int m_nuanceCode; ///< The nuance code
     int m_process;    ///< The process that created the particle
+    float m_pTime;    ///< The particle time
 };
 
 //------------------------------------------------------------------------------------------------------------------------------------------
@@ -183,7 +192,8 @@ private:
 inline LArMCParticle::LArMCParticle(const LArMCParticleParameters &parameters) :
     object_creation::MCParticle::Object(parameters),
     m_nuanceCode(parameters.m_nuanceCode.Get()),
-    m_process(parameters.m_process.Get())
+    m_process(parameters.m_process.Get()),
+    m_pTime(parameters.m_pTime.Get())
 {
 }
 
@@ -196,6 +206,13 @@ inline int LArMCParticle::GetNuanceCode() const
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+inline float LArMCParticle::GetMCParticleTime() const
+{
+    return m_pTime;
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
 inline void LArMCParticle::FillParameters(LArMCParticleParameters &parameters) const
 {
     parameters.m_nuanceCode = this->GetNuanceCode();
@@ -203,6 +220,7 @@ inline void LArMCParticle::FillParameters(LArMCParticleParameters &parameters) c
     parameters.m_energy = this->GetEnergy();
     parameters.m_momentum = this->GetMomentum();
     parameters.m_vertex = this->GetVertex();
+    parameters.m_pTime = this->GetMCParticleTime();
     parameters.m_endpoint = this->GetEndpoint();
     parameters.m_particleId = this->GetParticleId();
     parameters.m_mcParticleType = this->GetMCParticleType();
@@ -244,11 +262,14 @@ inline pandora::StatusCode LArMCParticleFactory::Create(const Parameters &parame
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+// BH BH BH: Note that for now we're not adding the time as a read-write output to file writer...
+
 inline pandora::StatusCode LArMCParticleFactory::Read(Parameters &parameters, pandora::FileReader &fileReader) const
 {
     // ATTN: To receive this call-back must have already set file reader mc particle factory to this factory
     int nuanceCode(0);
     int process(0);
+    float particleTime(0.f);
 
     if (pandora::BINARY == fileReader.GetFileType())
     {
