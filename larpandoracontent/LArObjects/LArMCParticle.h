@@ -269,7 +269,6 @@ inline pandora::StatusCode LArMCParticleFactory::Read(Parameters &parameters, pa
     // ATTN: To receive this call-back must have already set file reader mc particle factory to this factory
     int nuanceCode(0);
     int process(0);
-    float particleTime(0.f);
 
     if (pandora::BINARY == fileReader.GetFileType())
     {
