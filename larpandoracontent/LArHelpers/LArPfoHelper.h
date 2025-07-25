@@ -367,6 +367,11 @@ public:
     static void GetSlidingFitTrajectory(const pandora::ParticleFlowObject *const pPfo, const pandora::Vertex *const pVertex,
         const unsigned int slidingFitHalfWindow, const float layerPitch, LArTrackStateVector &trackStateVector);
 
+    /* TEST version where I allow it to use a const pandora::CaloHitList &pCaloHitList */
+    static void GetSlidingFitTrajectory(const pandora::CaloHitList *const pCaloHitList, const pandora::CartesianVector &vertexPosition,
+					const unsigned int slidingFitHalfWindow, const float layerPitch, LArTrackStateVector &trackStateVector,
+					pandora::IntVector *const pIndexVector = nullptr, const bool useCharge = false);
+
     /**
      *  @brief  Perform PCA analysis on a set of 3D points and return results
      *
@@ -419,10 +424,11 @@ private:
      *  @param  layerPitch  size of pitch for sliding linear fit
      *  @param  trackStateVector the output track trajectory
      *  @param  pIndexVector lookup vector of spacepoint indices to store trajectory point sorting
+     *  @param  useCharge boolean for whether or not to try to save the energy of a calohit
      */
     template <typename T>
     static void SlidingFitTrajectoryImpl(const T *const pT, const pandora::CartesianVector &vertexPosition, const unsigned int layerWindow,
-        const float layerPitch, LArTrackStateVector &trackStateVector, pandora::IntVector *const pIndexVector = nullptr);
+      const float layerPitch, LArTrackStateVector &trackStateVector, pandora::IntVector *const pIndexVector = nullptr, const bool useCharge = false);
 };
 
 } // namespace lar_content

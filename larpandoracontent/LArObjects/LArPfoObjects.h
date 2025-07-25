@@ -43,8 +43,19 @@ public:
      *
      *  @param  position the position
      *  @param  direction the direction
+     *  @param  charge the charge/energy in the calo hit
      */
     LArTrackState(const pandora::CartesianVector &position, const pandora::CartesianVector &direction);
+
+    /**
+     *  @brief  Constructor
+     *
+     *  @param  position the position
+     *  @param  direction the direction
+     *  @param  pCaloHit the address of the associated calo hit
+     *  @param  hitCharge the charge/energy in the calo hit
+     */
+    LArTrackState(const pandora::CartesianVector &position, const pandora::CartesianVector &direction, const pandora::CaloHit *const pCaloHit, const float charge);
 
     /**
      *  @brief  Return direction at this trajectory point
@@ -60,8 +71,14 @@ public:
      */
     const pandora::CaloHit *GetCaloHit() const;
 
+    /**
+     *  @brief Return the charge at this trajectory point
+     */
+    float GetCharge() const;
+
 private:
     const pandora::CaloHit *m_pCaloHit;
+    float m_hitCharge;
 };
 
 typedef std::vector<LArTrackState> LArTrackStateVector;

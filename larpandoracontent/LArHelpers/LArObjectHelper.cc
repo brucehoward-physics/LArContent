@@ -40,4 +40,18 @@ const CaloHit *LArObjectHelper::TypeAdaptor::GetCaloHit(const CaloHit *const &pC
     return pCaloHit2D;
 }
 
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+template<>
+const CaloHit *LArObjectHelper::TypeAdaptor::GetThisCaloHit(const CartesianVector &)
+{
+  return nullptr;
+}
+
+template<>
+const CaloHit *LArObjectHelper::TypeAdaptor::GetThisCaloHit(const CaloHit *const &pCaloHit3D)
+{
+  return pCaloHit3D;
+}
+
 } // namespace lar_content

@@ -17,15 +17,27 @@ namespace lar_content
 
 LArTrackState::LArTrackState(const CartesianVector &position, const CartesianVector &direction, const CaloHit *const pCaloHit) :
     TrackState(position, direction),
-    m_pCaloHit(pCaloHit)
+    m_pCaloHit(pCaloHit),
+    m_hitCharge(0.)
 {
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+
 LArTrackState::LArTrackState(const CartesianVector &position, const CartesianVector &direction) :
-    TrackState(position, direction),
-    m_pCaloHit(nullptr)
+  TrackState(position, direction),
+  m_pCaloHit(nullptr),
+  m_hitCharge(0.)
+{
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+LArTrackState::LArTrackState(const CartesianVector &position, const CartesianVector &direction,const CaloHit *const pCaloHit,  const float charge) :
+  TrackState(position, direction),
+  m_pCaloHit(pCaloHit),
+  m_hitCharge(charge)
 {
 }
 
@@ -44,6 +56,13 @@ const CaloHit *LArTrackState::GetCaloHit() const
         return m_pCaloHit;
 
     throw StatusCodeException(STATUS_CODE_NOT_INITIALIZED);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+float LArTrackState::GetCharge() const
+{
+  return m_hitCharge;
 }
 
 //------------------------------------------------------------------------------------------------------------------------------------------

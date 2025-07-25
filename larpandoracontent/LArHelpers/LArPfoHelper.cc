@@ -556,6 +556,15 @@ void LArPfoHelper::GetSlidingFitTrajectory(const ParticleFlowObject *const pPfo,
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+void LArPfoHelper::GetSlidingFitTrajectory(const CaloHitList *const pCaloHitList, const CartesianVector &vertexPosition,
+					   const unsigned int layerWindow, const float layerPitch, LArTrackStateVector &trackStateVector,
+					   IntVector *const pIndexVector, const bool useCharge)
+{
+  LArPfoHelper::SlidingFitTrajectoryImpl(pCaloHitList, vertexPosition, layerWindow, layerPitch, trackStateVector, pIndexVector, useCharge);
+}
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
 LArShowerPCA LArPfoHelper::GetPrincipalComponents(const CartesianPointVector &pointVector, const CartesianVector &vertexPosition)
 {
     // Run the PCA analysis
@@ -680,7 +689,7 @@ void LArPfoHelper::GetBreadthFirstHierarchyRepresentation(const pandora::Particl
 
 template <typename T>
 void LArPfoHelper::SlidingFitTrajectoryImpl(const T *const pT, const CartesianVector &vertexPosition, const unsigned int layerWindow,
-    const float layerPitch, LArTrackStateVector &trackStateVector, IntVector *const pIndexVector)
+  const float layerPitch, LArTrackStateVector &trackStateVector, IntVector *const pIndexVector, const bool useCharge)
 {
     CartesianPointVector pointVector;
 
@@ -734,8 +743,33 @@ void LArPfoHelper::SlidingFitTrajectoryImpl(const T *const pT, const CartesianVe
 
                 const float projection(seedDirection.GetDotProduct(position - seedPosition));
 
-                trackTrajectory.push_back(LArTrackTrajectoryPoint(projection * scaleFactor,
-                    LArTrackState(position, direction * scaleFactor, LArObjectHelper::TypeAdaptor::GetCaloHit(nextPoint)), index));
+		if ( !useCharge ) {
+		  // the typical way
+		  trackTrajectory.push_back(LArTrackTrajectoryPoint(projection * scaleFactor,
+		    LArTrackState(position, direction * scaleFactor, LArObjectHelper::TypeAdaptor::GetCaloHit(nextPoint)), index));
+		}
+		else {
+		  // we want to save the energy/charge of the hits at each track state
+		  // first, check that we are using an input CaloHit and not a CartesianVector
+		  if ( LArObjectHelper::TypeAdaptor::GetThisCaloHit(nextPoint) ){
+		    float charge;
+		    // if we're a 3d hit pointing to a 2d hit, get that 2d hit's energy
+		    //if ( LArObjectHelper::TypeAdaptor::GetCaloHit(nextPoint) ) {
+		    //  charge = LArObjectHelper::TypeAdaptor::GetCaloHit(nextPoint)->GetInputEnergy();
+		    //}
+		    // else get the input energy for the 3d hit
+		    //else {
+		    charge = LArObjectHelper::TypeAdaptor::GetThisCaloHit(nextPoint)->GetInputEnergy();
+		    //}
+		    trackTrajectory.push_back(LArTrackTrajectoryPoint(projection * scaleFactor,
+		      LArTrackState(position, direction * scaleFactor, LArObjectHelper::TypeAdaptor::GetCaloHit(nextPoint), charge), index));
+		  }
+		  // if we're using a CartesianVector then fall back to the typical way
+		  else {
+		    trackTrajectory.push_back(LArTrackTrajectoryPoint(projection * scaleFactor,
+		      LArTrackState(position, direction * scaleFactor, LArObjectHelper::TypeAdaptor::GetCaloHit(nextPoint)), index));
+		  }
+		}
             }
             catch (const StatusCodeException &statusCodeException1)
             {
@@ -773,8 +807,8 @@ void LArPfoHelper::SlidingFitTrajectoryImpl(const T *const pT, const CartesianVe
 //------------------------------------------------------------------------------------------------------------------------------------------
 
 template void LArPfoHelper::SlidingFitTrajectoryImpl(
-    const CartesianPointVector *const, const CartesianVector &, const unsigned int, const float, LArTrackStateVector &, IntVector *const);
+    const CartesianPointVector *const, const CartesianVector &, const unsigned int, const float, LArTrackStateVector &, IntVector *const, const bool);
 template void LArPfoHelper::SlidingFitTrajectoryImpl(
-    const CaloHitList *const, const CartesianVector &, const unsigned int, const float, LArTrackStateVector &, IntVector *const);
+    const CaloHitList *const, const CartesianVector &, const unsigned int, const float, LArTrackStateVector &, IntVector *const, const bool);
 
 } // namespace lar_content
